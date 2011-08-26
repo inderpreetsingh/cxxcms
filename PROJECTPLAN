@@ -1,0 +1,28 @@
+The first and basic need to run C++ CMS is the query string parser-
+
+This page has the specifications of the query string, http://en.wikipedia.org/wiki/Query_string
+
+What we need to do is, write a query string parser class, which will break the inputted query string into pieces,
+and we'll have a STL Map as output.
+
+The map will be of this sort: std::map<std::string, std::string> and as you might be knowing already, we've to use std::pair to access the elements.
+
+Also take a note that, all hexadecimal characters should be decoded into ASCII equivalents before inserting them into the final std::map.
+
+And to avoid memory leak problems, please use std::auto_ptr from the 'memory' header file wherever dynamic memory is required.
+
+Take a note of all possible flaws that can be caused by various delimiters in the query string, for example:
+
+Many old browsers pass the GET-query string as a=b&&c=d. So the first sanitization task should be to replace all double ampersands with single ampersand.
+
+All the replacement tasks can be accomplished using the BOOST_REGEX library or the pcrecpp library (man page available). PcreCPP is more preferable for this use.
+
+For UTF-8 compatibility, do turn on pcrecpp's utf8 option before conducting and search/replace operation.
+
+
+
+A reference of STL and other C++ features can be found at cppreference.com and cplusplus.com
+
+
+
+**** This file will be updated as the project proceeds ****
