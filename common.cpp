@@ -48,7 +48,7 @@ namespace Common {
     
     if(length < len) {
       char *tmp = new char[len];
-      if(message && length > 0)
+      if(message and length > 0)
 	this->~Exception();
       message = tmp;
     }
@@ -67,7 +67,7 @@ namespace Common {
    */
 
   Exception::~Exception() {
-    if(message && length)
+    if(message and length)
       delete [] message;
   }
 
