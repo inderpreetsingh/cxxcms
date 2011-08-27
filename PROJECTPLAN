@@ -2,7 +2,7 @@
 
 ** Query String parser-
 
-This page has the specifications of the query string, http://en.wikipedia.org/wiki/Query_string
+This page has the specifications of the query string, http://en.wikipedia.org/wiki/Query_string and rfc1738.txt, present in docs directory.
 
 What we need to do is, write a query string parser class, which will break the inputted query string into pieces,
 and we'll have a STL Map as output.
@@ -23,7 +23,7 @@ pcrecpp's utf8 option before conducting and search/replace operation.
 We've to design a header class, which will take care of header manipulation and parsing.
 Header manipulation and parsing includes cookies, modified, cache-control, etc.
 
-RFC for Header: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+RFC for Header: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html, rfc2616.txt, present in the docs directory.
 
 ** Request/Response classes-
 
