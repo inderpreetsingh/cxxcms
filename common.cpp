@@ -1,64 +1,76 @@
 #include "common.hpp"
+#include <cstring>
+#include <cstddef>
+#include <new>
 
 namespace Common {
 
   /* Definition of the Exception Class */
 
-  Exception::Exception(std::string str, int code = 0) {
-    this->setMessage(str);
-    this->setCode(code);
-  }
-
   Exception::Exception(char * str, int code = 0) {
-    this->setMessage(str);
-    this->setCode(code);
+    message = NULL;
+    length = 0;
+    setMessage(str);
+    setCode(code);
   }
 
   /* Type conversion functions.
    * See common.hpp for more info
    */
   
-  Exception::operator std::string() {
-    return this->getMessage();
-  }
-
   Exception::operator const char*() {
-    return this->getMessage().c_str();
+    return getMessage();
   }
 
   Exception::operator int() {
-    return this->getCode();
+    return getCode();
   }
 
   /* Functions to get object properties */
 
-  std::string Exception::getMessage() {
-    return this->message;
+  const char* Exception::getMessage() {
+    return message;
   }
 
-  /*const char* Exception::getMessage() {
-    return (this->message).c_str();
-    }*/
-
   int Exception::getCode() {
-    return this->code;
+    return code;
   }
 
   /* Functions to set object properties */
 
-  void Exception::setMessage(std::string str) {
-    this->message = str;
+  Exception* Exception::setMessage(const char* str) {
+    size_t len = std::strlen(str);
+
+    /*
+     * Memory must be allocated if the error message present has smaller
+     * length than the given one
+     */
+    
+    if(length < len) {
+      char *tmp = new char[len];
+      if(message && length > 0)
+	this->~Exception();
+      message = tmp;
+    }
+    std::strcpy(message, str);
+    length = len;
+    return this;
   }
 
-  void Exception::setMessage(char* str) {
-    this->message = str;
+  Exception* Exception::setCode(int c) {
+    code = c;
+    return this;
   }
 
-  void Exception::setCode(int code) {
-    this->code = code;
+  /*
+   * Deallocate memory allocate for message
+   */
+
+  Exception::~Exception() {
+    if(message && length)
+      delete [] message;
   }
 
   /* End Exception Definition */
 
 }
-  
