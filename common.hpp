@@ -57,6 +57,14 @@ namespace Common {
   };
 
   /* End of Exception Class */
-    
+
+  /*
+   * Templated Function to check string types
+   * Strings can be of many forms (see function definition for more info)
+   */
+
+  template <typename T>
+  bool is_string(T);
+      
 }
 #endif

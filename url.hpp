@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <list>
 
 /*
  * This namespace URL will contain all URL-related functions and classes.
@@ -23,7 +24,7 @@ namespace URL {
    * Error codes for our URL namespace
    */
 
-  enum err_t { QS_NOT_SET };
+  enum err_t { QS_NOT_SET, INVALID_TYPE };
 
   /*
    * Query String Parser, according to RFC 1738
@@ -43,7 +44,8 @@ namespace URL {
      * We have a count variable as well, to know how many dicts were allocated (see below)
      */
 
-    Dict_t *Dicts;
+    std::list<Dict_t*> Dicts;
+    std::list<char*> Strings; // char* used here because we need modification access
     Tuple_t Tuple;
 
     /*
@@ -52,21 +54,15 @@ namespace URL {
     
     std::string source;
 
-    /*
-     * A variable to keep track of how many times one object of this class has been used
-     */
-    
-    unsigned short count;
-
   public:
 
     /*
-     * Overloaded constructor, for char* and std::string and no-argument
+     * Templated constructor accepting some kind of string
+     * String type checked with Common::is_string()
      */
 
-    Parser(const std::string);
-    Parser(const char*);
-    Parser() : source_set(false) { }
+    template <typename T>
+    Parser(T);
 
     /*
      * The destructor, which will free all memory allocated for dicts, etc.
@@ -75,24 +71,24 @@ namespace URL {
     ~Parser();
 
     /*
-     * Overloaded property setter, for char* and std::string
+     * Templated property setter accepting some kind of string
+     * String type checked with Common::is_string()
      */
 
-    void setQstr(const std::string&);
-    void setQstr(const char*);
+    template <typename T>
+    void setQstr(T);
 
     /*
-     * Overloaded property getter, for char* and std::string
+     * Property retriever in type const char*
      */
 
     const char* getQstr() const;
-    const std::string getQstr() const;
 
     /*
      * The parser, returns reference to Dict 
      */
 
-    Dict& parse();
+    Dict_t& parse();
 
     /*
      * Clear function. Calls the destructor to clear up everything allocated so far
