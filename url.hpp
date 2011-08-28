@@ -4,7 +4,7 @@
 #include <memory>
 
 /*
- * This namespace, URL will contain all URL-related functions and classes.
+ * This namespace URL will contain all URL-related functions and classes.
  * All according to RFCs.
  */
 
