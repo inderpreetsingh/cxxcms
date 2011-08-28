@@ -18,27 +18,27 @@ namespace Common {
    * See common.hpp for more info
    */
   
-  Exception::operator const char*() {
+  Exception::operator const char*() const {
     return getMessage();
   }
 
-  Exception::operator int() {
+  Exception::operator int() const {
     return getCode();
   }
 
   /* Functions to get object properties */
 
-  const char* Exception::getMessage() {
+  const char* Exception::getMessage() const {
     return message;
   }
 
-  int Exception::getCode() {
+  int Exception::getCode() const {
     return code;
   }
 
   /* Functions to set object properties */
 
-  Exception* Exception::setMessage(const char* str) {
+  Exception& Exception::setMessage(const char* str) {
     size_t len = std::strlen(str);
 
     /*
@@ -54,12 +54,12 @@ namespace Common {
     }
     std::strcpy(message, str);
     length = len;
-    return this;
+    return *this;
   }
 
-  Exception* Exception::setCode(int c) {
+  Exception& Exception::setCode(int c) {
     code = c;
-    return this;
+    return *this;
   }
 
   /*

@@ -38,22 +38,22 @@ namespace Common {
      * If it is converted into a int, it will return the code
      */
 
-    operator const char*();
-    operator int();
+    operator const char*() const;
+    operator int() const;
 
     /* Functions to get object properties
      * These can be directly used, or type conversion functions will call these
      */
     
-    const char* getMessage();
-    int getCode();
+    const char* getMessage() const; 
+    int getCode() const;
 
     /* Functions to set object properties
      * These are called by the constructor and can be called directly
      */
     
-    Exception* setMessage(const char *);
-    Exception* setCode(int);        
+    Exception& setMessage(const char *);
+    Exception& setCode(int);        
   };
 
   /* End of Exception Class */
