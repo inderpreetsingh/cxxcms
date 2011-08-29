@@ -4,11 +4,7 @@
 #include <new>
 #include <list>
 #include <string>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/if.hpp>
 #include <typeinfo>
-
-int main() { }
 
 namespace Common {
 
@@ -101,12 +97,10 @@ namespace Common {
 
     std::list <std::string> tnames (tn, tn + sizeof(tn) / sizeof(std::string));
     std::string source_name = typeid(s).name();
-    bool result = true;
 
-    using namespace boost::lambda;
-    std::for_each(tnames.begin(), tnames.end(), if_then(_1 != source_name, result = false));
-    return result;
-    
+    for(std::list <std::string>::iterator i = tnames.begin(); i != tnames.end(); i++)
+      if(i->compare(source_name) == 0)
+	return true;
+    return false;    
   }
-
 }
