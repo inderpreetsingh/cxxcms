@@ -24,14 +24,13 @@ namespace URL {
    * Error codes for our URL namespace
    */
 
-  enum err_t { QS_NOT_SET, INVALID_TYPE };
+  enum err_t { QS_NOT_SET, INVALID_TYPE, MORE_THAN_ONE_HEX };
 
   /*
    * Query String Parser, according to RFC 1738
    */
 
   class Parser {
-    
   private:
 
     /*
@@ -56,11 +55,13 @@ namespace URL {
 
     /*
      * Templated constructor accepting some kind of string
-     * String type checked with Common::is_string()
+     * Calls setQstr(T)
      */
 
     template <typename T>
-    Parser(T);
+    Parser(T s) {
+      setQstr(s);
+    }
 
     /*
      * The destructor, which will free all memory allocated for dicts, etc.
@@ -74,7 +75,7 @@ namespace URL {
      */
 
     template <typename T>
-    void setQstr(T);
+    const Parser& setQstr(T);
 
     /*
      * Property retriever in type const char*
@@ -96,17 +97,15 @@ namespace URL {
     void clear() {
       this->~Parser();
     }
-
   };
 
   /*
-   * Templated function to decode() HEX (%FF) in Query Strings
+   * Templated function to decodeHex() HEX (%FF) in Query Strings
    * This function will be used by Parser::parse()
    * Returns char, accepts char* or std::string.
    * Type will be checked in the function using RTTI
    */
 
   template <typename T>
-  char decode(T);
-
+  char decodeHex(T);
 }
