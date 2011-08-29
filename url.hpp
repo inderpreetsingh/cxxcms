@@ -35,13 +35,11 @@ namespace URL {
   private:
 
     /*
-     * We're using const char* in the dictionary, hence it is important to free memory
-     * after the object goes out of scope.
-     * std::auto_ptr doesn't work with arrays, here const char* is an array,
-     * So, this variable will keep a track of all dicts allocated till now, considering that
-     * one object of this class might be used multiple times.
-     * Memory will be freed in the destructor.
-     * We have a count variable as well, to know how many dicts were allocated (see below)
+     * We are using const char* in the dictionary.
+     * const char* is an array and hence std::auto_ptr cannot be used here, to automatically deallocate memory when the object goes out of scope
+     * Hence we need tracking, for dictionaries allocated and strings (char*'s) allocated
+     * so that we can free them when either clear() is called or object of this class is destroyed.
+     * One object of this class might be used multiple times, and we can't gurantee that the older dictionaries are in use or not, hence this.
      */
 
     std::list<Dict_t*> Dicts;
