@@ -83,9 +83,11 @@ namespace URL {
     std::string source = s;
     unsigned int result = 0;
     unsigned int i = 0;
-    unsigned int j = source.size();
+    unsigned int j;
     
     source.erase(0, 1); // Removing % from %XX
+
+    j = = source.size();
     
     for (i = 0; i <= source.size(); i++, j--) {
         if (source.at(j) >= '0' && source.at(j) <= '9')
