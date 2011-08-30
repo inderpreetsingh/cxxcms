@@ -46,52 +46,12 @@ namespace URL {
       std::for_each(Strings.begin(), Strings.end(), bind(delete_array(), _1));    
   }
 
-  template <typename T>
-  const Parser& Parser::setQstr(T s) {
-
-    /*
-     * We're using `s' to set value of a string
-     * Hence it must be a string compatible type
-     */
-
-    if(!Common::is_string(s))
-      throw Common::Exception("Invalid type specified to URL::Parser::Parser", INVALID_TYPE);
-
-    source_string = s;
-    return *this;    
-  }
 
   const char* Parser::getQstr() const {
-    if(!source_string.size())
+    if(!source.size())
       throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET);
 
-    return source_string.c_str();
+    return source.c_str();
   }
-
-  /*
-   * Templated function decodeHex()
-   * Input: HEX String (with the % symbol, for example %AA)
-   * Output: The ASCII character
-   * Note that type of string must be one of those defined in Common::is_string()
-   */
-
-  template <typename T>
-  char decodeHex(T s) {
-    if(!Common::is_string(s))
-      throw Common::Exception("Invalid type passed to URL::decodeHex()", INVALID_TYPE);
-
-    std::string source = s;
-    unsigned int result = 0;
-    unsigned int i = 0;
-    unsigned int j = source.size();
-    
-    source.erase(0, 1); // Removing % from %XX
-    
-    for (i = 0; i <= source.size(); i++, j--) {
-        if (source.at(j) >= '0' && source.at(j) <= '9')
-            result += (source.at(j) - '0') * pow(16,i);
-        else if (source.at(j) >= 'A' && source.at(j) <= 'F')
-            result += (source.at(j) - ('A' - 10)) * pow(16,i);
-    }
-    return result;
 }
+

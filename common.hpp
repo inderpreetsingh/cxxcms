@@ -1,6 +1,9 @@
 #ifndef COMMON_H
 #define COMMON_H 1
 #include <cstddef>
+#include <string>
+#include <list>
+#include <typeinfo>
 
 namespace Common {
 
@@ -59,12 +62,37 @@ namespace Common {
   /* End of Exception Class */
 
   /*
-   * Templated Function to check string types
-   * Strings can be of many forms (see function definition for more info)
+   * Templated functions cannot be declared somewhere and
+   * defined somewhere else.
+   * Hence, defining them here.
+   */
+
+    /*
+   * Function returns true if the given type is some form of string
+   * C-style strings, const strings, etc, etc
    */
 
   template <typename T>
-  bool is_string(T);
-      
+  bool is_string(T s) {    
+
+    std::string tn[] = {
+      typeid(std::string).name(),
+      typeid(std::string&).name(),
+      typeid(std::string*).name(),
+      typeid(const std::string).name(),
+      typeid(const std::string&).name(),
+      typeid(const std::string*).name(),
+      typeid(char*).name(),
+      typeid(const char*).name()
+    };
+
+    std::list <std::string> tnames (tn, tn + sizeof(tn) / sizeof(std::string));
+    std::string source_name = typeid(s).name();
+
+    for(std::list <std::string>::iterator i = tnames.begin(); i != tnames.end(); i++)
+      if(i->compare(source_name) == 0)
+	return true;
+    return false;    
+  }      
 }
 #endif

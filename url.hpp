@@ -1,8 +1,11 @@
+#ifndef URL_HPP
+#define URL_HPP 1
 #include "common.hpp"
 #include <map>
 #include <string>
 #include <memory>
 #include <list>
+#include <cmath>
 
 /*
  * This namespace URL will contain all URL-related functions and classes.
@@ -100,12 +103,51 @@ namespace URL {
   };
 
   /*
-   * Templated function to decodeHex() HEX (%FF) in Query Strings
-   * This function will be used by Parser::parse()
-   * Returns char, accepts char* or std::string.
-   * Type will be checked in the function using RTTI
+   * Templated functions CANNOT be declared somewhere and defined somewhere else
+   * Hence, defining them here.
    */
 
   template <typename T>
-  char decodeHex(T);
+  const Parser& Parser::setQstr(T s) {
+
+    /*
+     * We're using `s' to set value of a string
+     * Hence it must be a string compatible type
+     */
+
+    if(!Common::is_string(s))
+      throw Common::Exception("Invalid type specified to URL::Parser::Parser", INVALID_TYPE);
+
+    source = s;
+    return *this;    
+  }
+
+  /*
+   * Templated function decodeHex()
+   * Input: HEX String (with the % symbol, for example %AA)
+   * Output: The ASCII character
+   * Note that type of string must be one of those defined in Common::is_string()
+   */
+
+  template <typename T>
+  char decodeHex(T s) {
+    if(!Common::is_string(s))
+      throw Common::Exception("Invalid type passed to URL::decodeHex()", INVALID_TYPE);
+
+    std::string source = s;
+    unsigned int result = 0;
+    unsigned int i = 0;
+
+    source.erase(0, 1); // Removing % from %XX
+
+    unsigned int j = source.size() - 1;
+
+    for (i = 0; i < source.size(); i++, j--)
+        if (source.at(j) >= '0' && source.at(j) <= '9')
+	  result += (source.at(j) - '0') * std::pow(16, i);
+        else if (source.at(j) >= 'A' && source.at(j) <= 'F')
+	  result += (source.at(j) - ('A' - 10)) * std::pow(16, i);    
+    return result;
+  }
 }
+#endif
