@@ -145,9 +145,10 @@ namespace URL {
 
     for (i = 0; i < source.size(); i++, j--)
         if (source.at(j) >= '0' && source.at(j) <= '9')
-	  result += (source.at(j) - '0') * std::pow(16, i);
+            result += (source.at(j) - '0') * std::pow(16, i);
         else if (source.at(j) >= 'A' && source.at(j) <= 'F')
-	  result += ((source.at(j) - 'A') + 10) * std::pow(16, i);    
+            result += ((source.at(j) - 'A') + 10) * std::pow(16, i); // eg: ('B' - 'A') + 10 = (66 - 65) + 10 = 11
+    
     return result;
   }
 }
