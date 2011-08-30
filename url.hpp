@@ -139,6 +139,7 @@ namespace URL {
     unsigned int i = 0;
 
     source.erase(0, 1); // Removing % from %XX
+    std::transform(source.begin(), source.end(), source.begin(), ::toupper);
 
     unsigned int j = source.size() - 1;
 
@@ -146,7 +147,7 @@ namespace URL {
         if (source.at(j) >= '0' && source.at(j) <= '9')
 	  result += (source.at(j) - '0') * std::pow(16, i);
         else if (source.at(j) >= 'A' && source.at(j) <= 'F')
-	  result += (source.at(j) - ('A' - 10)) * std::pow(16, i);    
+	  result += ((source.at(j) - 'A') + 10) * std::pow(16, i);    
     return result;
   }
 }
