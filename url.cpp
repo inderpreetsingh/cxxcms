@@ -87,7 +87,7 @@ namespace URL {
     
     source.erase(0, 1); // Removing % from %XX
 
-    j = = source.size();
+    j =  source.size();
     
     for (i = 0; i <= source.size(); i++, j--) {
         if (source.at(j) >= '0' && source.at(j) <= '9')
