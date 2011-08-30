@@ -83,14 +83,15 @@ namespace URL {
     std::string source = s;
     unsigned int result = 0;
     unsigned int i = 0;
+    unsigned int j = source.size();
     
     source.erase(0, 1); // Removing % from %XX
-
-    /* This is incomplete!!!! */
-
-    /*    for(i = 0; i <= source.size(); i++) {
-     if(source.at(i) >= '0' and source.at(i) <= '9')
-      result += source.at(i) * pow(16, i + 1);*/
-
-  }
+    
+    for (i = 0; i <= source.size(); i++, j--) {
+        if (source.at(j) >= '0' && source.at(j) <= '9')
+            result += (source.at(j) - '0') * pow(16,i);
+        else if (source.at(j) >= 'A' && source.at(j) <= 'F')
+            result += (source.at(j) - ('A' - 10)) * pow(16,i);
+    }
+    return result;
 }
