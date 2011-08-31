@@ -3,16 +3,6 @@
 #include <cstddef>
 #include <new>
 #include <sstream>
-#include <iostream>
-
-int main() {
-  try {
-    throw Common::Exception("MOO", 11, __LINE__, __FILE__);
-  } catch(Common::Exception e) {
-    std::cout << e.getCMessage() << "\n";
-  }
-}
-    
 
 namespace Common {
 
