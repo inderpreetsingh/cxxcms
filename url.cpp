@@ -46,12 +46,29 @@ namespace URL {
       std::for_each(Strings.begin(), Strings.end(), bind(delete_array(), _1));    
   }
 
-
-  const char* Parser::getQstr() const {
-    if(!source.size())
-      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET);
-
-    return source.c_str();
-  }
+    void Parser::_sanitize(std::string& s) {
+        unsigned int i;
+        for (i = n; i < s.size(); i++) {
+            if (s.at(i) == '&' || s.at(i) == '=') {
+                if (i == 0 or i >= s.size()) break;
+                if (s.at(i-1) == '&' || s.at(i-1) == '=') {
+                    s.erase(i,1);
+                    _sanitize(s,i);
+                }
+            }
+        }
+        while (s.at(0) == '=' || s.at(0) == '&')
+            s.erase(0,1);
+        
+        while (s.at(s.size()-1) == '=' || s.at(s.size()-1) == '&')
+            s.erase(s.size()-1,1);
+    }
+    
+    const char* Parser::getQstr() const {
+        if(!source.size())
+            throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET);
+        
+        return source.c_str();
+    }
 }
 
