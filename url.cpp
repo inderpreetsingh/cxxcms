@@ -46,7 +46,7 @@ namespace URL {
       std::for_each(Strings.begin(), Strings.end(), bind(delete_array(), _1));    
   }
 
-    void Parser::_sanitize(std::string& s, int n) {
+    void Parser::_sanitize(std::string& s, unsigned int n) {
         unsigned int i;
         for (i = n; i < s.size(); i++) {
             if (s.at(i) == '&' || s.at(i) == '=') {
