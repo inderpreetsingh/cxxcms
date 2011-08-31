@@ -20,7 +20,10 @@ namespace Common {
 
     char* message;
     int code;
-    size_t length;
+    size_t length_msg;
+    size_t length_file;
+    unsigned int line;
+    char* file;
 
   public:
 
@@ -28,7 +31,7 @@ namespace Common {
      * Accepts input for message as char *
      */
 
-    Exception(char *, int);
+    Exception(char *, int, unsigned int, char*);
 
     /* The destructor
      * Required to deallocate message memory
@@ -50,13 +53,18 @@ namespace Common {
     
     const char* getMessage() const; 
     int getCode() const;
+    unsigned int getLineNo() const;
+    const char* getFileName() const;
+    const char* getCMessage() const; // Returns the complete message of the form [Error X] on line #L of file F, called by object-char converter
 
     /* Functions to set object properties
      * These are called by the constructor and can be called directly
      */
     
     Exception& setMessage(const char *);
-    Exception& setCode(int);        
+    Exception& setCode(int);
+    Exception& setLineNo(unsigned int);
+    Exception& setFileName(const char *);
   };
 
   /* End of Exception Class */
