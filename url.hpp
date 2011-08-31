@@ -55,6 +55,14 @@ namespace URL {
     
     std::string source;
 
+    /*
+     * Query string sanitizer
+     * There are some string combinations, that can produce errors, major ones!
+     * Some of them are described here- https://bitbucket.org/nileshgr/cppcms/wiki/Plan
+     */
+
+    void _sanitize(std::string&);
+    
   public:
 
     /*
@@ -101,6 +109,7 @@ namespace URL {
     void clear() {
       this->~Parser();
     }
+
   };
 
   /*
