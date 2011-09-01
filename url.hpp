@@ -7,6 +7,7 @@
 #include <list>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 /*
  * This namespace URL will contain all URL-related functions and classes.
@@ -28,7 +29,7 @@ namespace URL {
    * Error codes for our URL namespace
    */
 
-  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL };
+  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL, QS_AMP_NOT_FOUND, QS_EQ_NOT_FOUND, QS_SPLIT_EQ_INVALID_PART };
 
   /*
    * Query String Parser, according to RFC 1738
@@ -46,7 +47,7 @@ namespace URL {
      */
 
     std::list<Dict_t*> Dicts;
-    std::list<char*> Strings; // char* used here because we need modification access
+    std::list<const char*> Strings;
     Tuple_t Tuple;
 
     /*
@@ -61,7 +62,10 @@ namespace URL {
      * Some of them are described here- https://bitbucket.org/nileshgr/cppcms/wiki/Plan
      */
 
-    void _sanitize(std::string&);
+    void _sanitize(std::string&, size_t);
+
+    std::string& _splitbyamp(std::string&);
+    std::string& _splitbyeq(std::string&, unsigned int);
     
   public:
 
@@ -72,6 +76,7 @@ namespace URL {
 
     template <typename T>
     Parser(T s) {
+      std::cout << "Constructor";
       setQstr(s);
     }
 
@@ -126,7 +131,7 @@ namespace URL {
      */
 
     if(!Common::is_string(s))
-      throw Common::Exception("Invalid type specified to URL::Parser::Parser", INVALID_TYPE);
+      throw Common::Exception("Invalid type specified to URL::Parser::Parser", INVALID_TYPE, __LINE__, __FILE__);
 
     source = s;
     return *this;    

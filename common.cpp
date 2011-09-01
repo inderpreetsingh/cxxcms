@@ -8,7 +8,7 @@ namespace Common {
 
   /* Definition of the Exception Class */
 
-  Exception::Exception(char *str, int code = 0, unsigned int line_no = 0, char *fname = NULL) {
+  Exception::Exception(const char *str, int code, unsigned int line_no, const char *fname) {
     message = NULL;
     length_msg = length_file = line = 0;
     setMessage(str);

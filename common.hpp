@@ -28,10 +28,10 @@ namespace Common {
   public:
 
     /* The constructor
-     * Accepts input for message as char *
+     * Accepts input for message as const char *
      */
 
-    Exception(char *, int, unsigned int, char*);
+    Exception(const char *, int = 0, unsigned int = 0, const char* = NULL);
 
     /* The destructor
      * Required to deallocate message memory
