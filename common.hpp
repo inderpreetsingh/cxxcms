@@ -4,13 +4,15 @@
 #include <string>
 #include <list>
 #include <typeinfo>
+#include <string>
+#include <cassert>
 
 namespace Common {
 
   /*
    * Exception Class
    * This class will be thrown whenever an exception occurs
-   * Converting this class to char* will return the message
+   * Converting this class to char* or std::string will return the message
    * Converting this class to int will return the code
    */
 
@@ -18,26 +20,19 @@ namespace Common {
 
   private:
 
-    char* message;
+    std::string message;
     int code;
-    size_t length_msg;
-    size_t length_file;
     unsigned int line;
-    char* file;
+    std::string file;
 
   public:
 
-    /* The constructor
-     * Accepts input for message as const char *
+    /*
+     * The constructor (templated)
      */
 
-    Exception(const char *, int = 0, unsigned int = 0, const char* = NULL);
-
-    /* The destructor
-     * Required to deallocate message memory
-     */
-
-    ~Exception();
+    template <typename T>
+    Exception(T, int = 0, unsigned int = 0,  const char* = NULL);
 
     /* Define type conversion functions
      * If this object is converted into a char*, then it will return the message
@@ -60,11 +55,12 @@ namespace Common {
     /* Functions to set object properties
      * These are called by the constructor and can be called directly
      */
-    
-    Exception& setMessage(const char *);
+
+    template <typename T>
+    Exception& setMessage(T);
     Exception& setCode(int);
     Exception& setLineNo(unsigned int);
-    Exception& setFileName(const char *);
+    Exception& setFileName(const char*);
   };
 
   /* End of Exception Class */
@@ -75,7 +71,8 @@ namespace Common {
    * Hence, defining them here.
    */
 
-    /*
+  
+  /*
    * Function returns true if the given type is some form of string
    * C-style strings, const strings, etc, etc
    */
@@ -101,6 +98,21 @@ namespace Common {
       if(i->compare(source_name) == 0)
 	return true;
     return false;    
-  }      
+  }
+
+  template <typename T>
+  Exception::Exception(T m, int c, unsigned int l, const char * fname) {
+    setMessage(m);
+    setCode(c);
+    setLineNo(l);
+    setFileName(fname);
+  }
+
+  template <typename T>
+  Exception& Exception::setMessage(T m) {
+    assert(Common::is_string(m) == true);
+    message = m;
+    return *this;
+  }  
 }
 #endif

@@ -8,15 +8,6 @@ namespace Common {
 
   /* Definition of the Exception Class */
 
-  Exception::Exception(const char *str, int code, unsigned int line_no, const char *fname) {
-    message = NULL;
-    length_msg = length_file = line = 0;
-    setMessage(str);
-    setCode(code);
-    setLineNo(line_no);
-    setFileName(fname);
-  }
-
   /* Type conversion functions.
    * See common.hpp for more info
    */
@@ -32,7 +23,7 @@ namespace Common {
   /* Functions to get object properties */
 
   const char* Exception::getMessage() const {
-    return message;
+    return message.c_str();
   }
 
   int Exception::getCode() const {
@@ -44,7 +35,7 @@ namespace Common {
   }
 
   const char* Exception::getFileName() const {
-    return file;
+    return file.c_str();
   }
 
   const char* Exception::getCMessage() const {
@@ -57,43 +48,12 @@ namespace Common {
     return s.str().c_str();
   }
 
-  /* Functions to set object properties */
-
-  Exception& Exception::setMessage(const char* str) {
-    size_t len = std::strlen(str);
-
-    /*
-     * Memory must be allocated if the error message present has smaller
-     * length than the given one
-     */
-    
-    if(length_msg < len) {
-      char *tmp = new char[len];
-      if(message and length_msg > 0)
-	this->~Exception();
-      message = tmp;
-    }
-    std::strcpy(message, str);
-    length_msg = len;
-    return *this;
-  }
-
   Exception& Exception::setFileName(const char* str) {
-    size_t len = std::strlen(str);
-
-    /*
-     * Memory must be allocated if the error message present has smaller
-     * length than the given one
-     */
-    
-    if(length_file < len) {
-      char *tmp = new char[len];
-      if(file and length_file > 0)
-	this->~Exception();
-      file = tmp;
+    if(!str) {
+      file = "";
+      return *this;
     }
-    std::strcpy(file, str);
-    length_file = len;
+    file  = str;
     return *this;
   }
 
@@ -105,17 +65,6 @@ namespace Common {
   Exception& Exception::setLineNo(unsigned int l) {
     line = l;
     return *this;
-  }
-
-  /*
-   * Deallocate memory allocate for message
-   */
-
-  Exception::~Exception() {
-    if(message and length_msg)
-      delete [] message;
-    if(file and length_file)
-      delete [] file;
   }
 
   /* End Exception Definition */

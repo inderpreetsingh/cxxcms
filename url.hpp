@@ -7,7 +7,7 @@
 #include <list>
 #include <cmath>
 #include <algorithm>
-#include <iostream>
+#include <memory>
 
 /*
  * This namespace URL will contain all URL-related functions and classes.
@@ -18,12 +18,13 @@ namespace URL {
 
   /*
    * Define the Dict and Tuple data types
-   * Dict is a std::map<char*, char*> (two column)
-   * Tuple is one single element of the map using std::pair<char*, char*>
+   * Dict is a std::map<string, string> (two column)
+   * Tuple is one single element of the map using std::pair<string, string>
    */
 
   typedef std::map<const char*, const char*> Dict_t;
   typedef std::pair<const char*, const char*> Tuple_t;
+  typedef std::auto_ptr <Dict_t> Dict_ptr_t;
   
   /*
    * Error codes for our URL namespace
@@ -39,18 +40,6 @@ namespace URL {
   private:
 
     /*
-     * We are using const char* in the dictionary.
-     * const char* is an array and hence std::auto_ptr cannot be used here, to automatically deallocate memory when the object goes out of scope
-     * Hence we need tracking, for dictionaries allocated and strings (char*'s) allocated
-     * so that we can free them when either clear() is called or object of this class is destroyed.
-     * One object of this class might be used multiple times, and we can't gurantee that the older dictionaries are in use or not, hence this.
-     */
-
-    std::list<Dict_t*> Dicts;
-    std::list<const char*> Strings;
-    Tuple_t Tuple;
-
-    /*
      * The raw query string as obtained from getenv('QUERY_STRING')
      */
     
@@ -63,9 +52,6 @@ namespace URL {
      */
 
     void _sanitize(std::string&, size_t);
-
-    std::string& _splitbyamp(std::string&);
-    std::string& _splitbyeq(std::string&, unsigned int);
     
   public:
 
@@ -76,15 +62,11 @@ namespace URL {
 
     template <typename T>
     Parser(T s) {
-      std::cout << "Constructor";
       setQstr(s);
     }
 
-    /*
-     * The destructor, which will free all memory allocated for dicts, etc.
-     */
-
-    ~Parser();
+    Parser() {
+    }
 
     /*
      * Templated property setter accepting some kind of string
@@ -101,10 +83,10 @@ namespace URL {
     const char* getQstr() const;
 
     /*
-     * The parser, returns reference to Dict 
+     * The parser, returns reference to auto_ptr'd Dict.
      */
 
-    Dict_t& parse();
+    Dict_ptr_t& parse();
 
     /*
      * Clear function. Calls the destructor to clear up everything allocated so far
