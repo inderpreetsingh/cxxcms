@@ -1,30 +1,33 @@
-#include "url.hpp"
+#include "cgi.hpp"
 #include <string>
 #include <list>
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <cstring>
-#include <cstdlib>
-#include <cassert>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/construct.hpp>
+#include <iostream>
 
 int main() {
-  std::string q("a=b&c=d");
-  URL::Parser p(q);
-  URL::Dict_ptr_t& d = p.parse();
-  for(URL::Dict_t::iterator i = d->begin(); i != d->end(); i++) {
-    std::cout << "Value1: " <<  i->first << "\t";
+  std::string q("a=b&c=d&e=f&g&=h==");
+  CGI::Dict_ptr_t p = CGI::Parser(q).parse();
+  for(CGI::Dict_t::iterator i = p->begin(); i != p->end(); i++) {
+    std::cout << "Value 1: " << i->first << "\t";
     if(i->second)
-      std::cout << "Value2: " << i->second << "\n";
+      std::cout << "Value 2: " << i->second;
+    std::cout << "\n";
   }
+  CGI::Dict_t d = *p.get();
+  std::cout << "\n\n\n" << d.find("a")->second;
 }
 
 /*
- * This namespace URL as said in url.hpp contains all URL-related functions and classes
+ * This namespace CGI as said in cgi.hpp contains all CGI-related functions and classes
  * Complying to the respective RFCs
  */
 
-namespace URL {
+namespace CGI {
 
   /*
    * Implementation of the Parser class
@@ -54,31 +57,44 @@ namespace URL {
       s.erase(s.size()-1,1);
   }
 
-  Dict_ptr_t& Parser::parse() {    
+  Dict_ptr_t Parser::parse() {    
     std::string copy = getQstr(), extract = "";
     _sanitize(copy);
+
     size_t amp_pos = 0, eq_pos = 0;
     Dict_ptr_t ret (new Dict_t);
+    Tuple_t t;
+    char *out1 = NULL;
+    char *out2 = NULL;
+    std::string tmp;
+
     do {
       if((amp_pos = copy.find("&")) != std::string::npos) {
 	extract = copy.substr(0, amp_pos);
 	copy.erase(0, amp_pos + 1);
-	std::cout << "Extract: " << extract << "\n";
       }
       else {
 	extract = copy;
 	copy.clear();
       }
       if((eq_pos = extract.find("=")) != std::string::npos) {
-	std::cout << "Adding elements: " << extract.substr(0, eq_pos) << "\t" << extract.substr(eq_pos + 1) << "\n";
-	std::cout << "Value of copy: " << copy << "\n";
-	ret->insert(Tuple_t(extract.substr(0, eq_pos).c_str(), extract.substr(eq_pos + 1).c_str()));
-	std::cout << "Deference: " << ret->find(extract.substr(0, eq_pos).c_str())->second << "\n";
+	tmp = extract.substr(0, eq_pos);
+	out1 = new char[tmp.size()];
+	std::strcpy(out1, tmp.c_str());
+	tmp = extract.substr(eq_pos + 1);
+	out2 = new char[tmp.size()];
+	std::strcpy(out2, tmp.c_str());
+	ret->insert(Tuple_t(out1, out2));
 	extract.clear();
+	/*Strings.push_back(out1);
+	  Strings.push_back(out2);*/
       }
       else {
-	ret->insert(Tuple_t(extract.c_str(), NULL));
+	out1 = new char[extract.size()];
+	std::strcpy(out1, extract.c_str());
+	ret->insert(Tuple_t(out1, NULL));
 	extract.clear();
+	//	Strings.push_back(out1);
       }
     } while(copy.size());
     return ret;
@@ -89,4 +105,11 @@ namespace URL {
       throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET, __LINE__, __FILE__);        
     return source.c_str();
   }
+
+  Parser::~Parser() {
+    using namespace boost::lambda;
+
+    if(Strings.size())
+      std::for_each(Strings.begin(), Strings.end(), bind(delete_array(), _1));
+  }    
 }

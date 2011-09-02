@@ -1,5 +1,5 @@
-#ifndef URL_HPP
-#define URL_HPP 1
+#ifndef CGI_HPP
+#define CGI_HPP 1
 #include "common.hpp"
 #include <map>
 #include <string>
@@ -10,11 +10,11 @@
 #include <memory>
 
 /*
- * This namespace URL will contain all URL-related functions and classes.
+ * This namespace CGI will contain all CGI-related functions and classes.
  * All according to RFCs.
  */
 
-namespace URL {
+namespace CGI {
 
   /*
    * Define the Dict and Tuple data types
@@ -30,7 +30,7 @@ namespace URL {
    * Error codes for our URL namespace
    */
 
-  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL, QS_AMP_NOT_FOUND, QS_EQ_NOT_FOUND, QS_SPLIT_EQ_INVALID_PART };
+  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL };
 
   /*
    * Query String Parser, according to RFC 1738
@@ -38,6 +38,8 @@ namespace URL {
 
   class Parser {
   private:
+
+    std::list <char*> Strings;
 
     /*
      * The raw query string as obtained from getenv('QUERY_STRING')
@@ -68,6 +70,8 @@ namespace URL {
     Parser() {
     }
 
+    ~Parser();
+
     /*
      * Templated property setter accepting some kind of string
      * String type checked with Common::is_string()
@@ -86,7 +90,7 @@ namespace URL {
      * The parser, returns reference to auto_ptr'd Dict.
      */
 
-    Dict_ptr_t& parse();
+    Dict_ptr_t parse();
 
     /*
      * Clear function. Calls the destructor to clear up everything allocated so far
