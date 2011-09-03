@@ -39,22 +39,22 @@ namespace CGI {
    */
 
   void Parser::_sanitize(std::string& s, size_t n = 1) {
-    size_t i;
-    for (i = n; i < s.size(); i++) {
-      if (s.at(i) == '&' || s.at(i) == '=') {
-	if (i == 0 or i >= s.size()) break;
-	if (s.at(i-1) == '&' || s.at(i-1) == '=') {
-	  s.erase(i,1);
-	  _sanitize(s,i);
-	}
+      size_t i;
+      for (i = n; i < s.size(); i++) {
+          if (s.at(i) == '&' || s.at(i) == '=' || s.at(i) == ';') {
+              if (i == 0 or i >= s.size()) break;
+              if (s.at(i-1) == '&' || s.at(i-1) == '=' || s.at(i-1) == ';') {
+                  s.erase(i,1);
+                  _sanitize(s,i);
+              }
+          }
       }
-    }
         
-    while (s.at(0) == '=' || s.at(0) == '&')
-      s.erase(0,1);
-        
-    while (s.at(s.size()-1) == '=' || s.at(s.size()-1) == '&')
-      s.erase(s.size()-1,1);
+      while (s.at(0) == '=' || s.at(0) == '&' || s.at(0) == ';')
+          s.erase(0,1);
+      
+      while (s.at(s.size()-1) == '=' || s.at(s.size()-1) == '&' || s.at(s.size()-1) == ';')
+          s.erase(s.size()-1,1);
   }
 
   Dict_ptr_t Parser::parse() {    
