@@ -1,4 +1,4 @@
-#include <cgi/cgi.hpp>
+#include <cgi/parser.hpp>
 
 /*
  * This namespace CGI as said in cgi.hpp contains all CGI-related functions and classes

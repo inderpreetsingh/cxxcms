@@ -33,3 +33,4 @@ namespace CGI {
 
   int decodeHex(std::string);
 }
+#endif
