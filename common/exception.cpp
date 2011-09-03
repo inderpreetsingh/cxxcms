@@ -1,15 +1,11 @@
-#include "common.hpp"
-#include <cstring>
-#include <cstddef>
-#include <new>
-#include <sstream>
+#include <common/exception.hpp>
 
 namespace Common {
 
   /* Definition of the Exception Class */
 
   /* Type conversion functions.
-   * See common.hpp for more info
+   * See exception.hpp for more info
    */
   
   Exception::operator const char*() const {
