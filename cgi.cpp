@@ -1,26 +1,9 @@
 #include "cgi.hpp"
 #include <string>
-#include <list>
 #include <algorithm>
 #include <memory>
-#include <cstring>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
-#include <boost/lambda/construct.hpp>
-#include <iostream>
-
-int main() {
-    std::string q("a=b&c=d&e=f&g&=h==");
-    CGI::Dict_ptr_t p = CGI::Parser(q).parse();
-    for(CGI::Dict_t::iterator i = p->begin(); i != p->end(); i++) {
-        std::cout << "Value 1: " << i->first << "\t";
-        if(i->second)
-            std::cout << "Value 2: " << i->second;
-        std::cout << "\n";
-    }
-    CGI::Dict_t d = *p.get();
-    std::cout << "\n\n\n" << d.find("a")->second;
-}
+#include <cmath>
+#include <cctype>
 
 /*
  * This namespace CGI as said in cgi.hpp contains all CGI-related functions and classes
@@ -61,44 +44,45 @@ namespace CGI {
         std::string copy = getQstr(), extract = "";
         _sanitize(copy);
 
-        size_t amp_pos = 0, eq_pos = 0;
-        Dict_ptr_t ret (new Dict_t);
-        Tuple_t t;
-        char *out1 = NULL;
-        char *out2 = NULL;
-        std::string tmp;
+	size_t amp_pos = std::string::npos, eq_pos = std::string::npos, percent_pos = std::string::npos;
+	Dict_ptr_t ret (new Dict_t);
+	std::string key = "", value = "";
 
-        do {
-            if((amp_pos = copy.find("&")) != std::string::npos) {
-                extract = copy.substr(0, amp_pos);
-                copy.erase(0, amp_pos + 1);
-            }
-            else {
-                extract = copy;
-                copy.clear();
-            }
-            if((eq_pos = extract.find("=")) != std::string::npos) {
-                tmp = extract.substr(0, eq_pos);
-                out1 = new char[tmp.size()];
-                std::strcpy(out1, tmp.c_str());
-                tmp = extract.substr(eq_pos + 1);
-                out2 = new char[tmp.size()];
-                std::strcpy(out2, tmp.c_str());
-                ret->insert(Tuple_t(out1, out2));
-                extract.clear();
-                /*Strings.push_back(out1);
-                  Strings.push_back(out2);*/
-            }
-            else {
-                out1 = new char[extract.size()];
-                std::strcpy(out1, extract.c_str());
-                ret->insert(Tuple_t(out1, NULL));
-                extract.clear();
-                //	Strings.push_back(out1);
-            }
-        } while(copy.size());
-        return ret;
-    }	
+    do {
+      if((amp_pos = copy.find('&')) != std::string::npos) {
+	extract = copy.substr(0, amp_pos);
+	copy.erase(0, amp_pos + 1);
+      }
+      else {
+	extract = copy;
+	copy.clear();
+      }
+      if((eq_pos = extract.find('=')) != std::string::npos) {
+	key  = extract.substr(0, eq_pos);
+	value = extract.substr(eq_pos + 1);
+	extract.clear();
+      }
+      else {
+	key = extract;
+	value = "";
+	extract.clear();
+      }
+      if((percent_pos = key.find('%')) != std::string::npos)
+	key.replace(percent_pos, percent_pos + 3, 1, decodeHex(key.substr(percent_pos, percent_pos + 3)));
+
+      /*
+       * For some strange reason value.find() returns pos + 1 for position for %
+       * Hence a hack has been added here. If troublesome, remove -1 and change 4 to 3.
+       */
+      
+      if((percent_pos = value.find('%') != std::string::npos))
+	value.replace(percent_pos-1, percent_pos + 4, 1, decodeHex(value.substr(percent_pos-1, percent_pos + 4)));
+      
+      ret->insert(Tuple_t(key, value));
+    }
+    while(copy.size());
+    return ret;
+  }	
     
     const char* Parser::getQstr() const {
         if(!source.size())
@@ -106,10 +90,38 @@ namespace CGI {
         return source.c_str();
     }
 
-    Parser::~Parser() {
-        using namespace boost::lambda;
+  const Parser& Parser::setQstr(std::string s) {
+    source = s;
+    return *this;    
+  }
 
-        if(Strings.size())
-            std::for_each(Strings.begin(), Strings.end(), bind(delete_array(), _1));
-    }    
+  /*
+   * Function decodeHex()
+   * Input: HEX String (with the % symbol, for example %AA)
+   * Output: Integer
+   */
+
+  int decodeHex(std::string source) {
+    source.erase(0, 1); // Removing % from %XX
+    
+    unsigned int i = 0;
+    unsigned int j = source.size() - 1;
+    int result = 0;
+
+    /*
+     * Convert the string to upper case
+     */
+    
+    std::transform(source.begin(), source.end(), source.begin(), (int (*)(int)) std::toupper);
+    // (int (*) (int)) added so that the proper toupper() in cctype is chosen instead of the one in locale.
+
+    for (i = 0; i < source.size(); i++, j--)
+        if (source.at(j) >= '0' and source.at(j) <= '9')
+            result += (source.at(j) - '0') * std::pow(16, i);
+        else if (source.at(j) >= 'A' and source.at(j) <= 'F')
+	  result += ((source.at(j) - 'A') + 10) * std::pow(16, i); // eg: ('B' - 'A') + 10 = (66 - 65) + 10 = 11
+	else
+	  throw Common::Exception("Invalid HEX symbol found in Common::decodeHex", INVALID_HEX_SYMBOL);       
+    return result;
+  }
 }

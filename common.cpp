@@ -67,5 +67,16 @@ namespace Common {
     return *this;
   }
 
+  Exception::Exception(std::string m, int c, unsigned int l, const char * fname) {
+    setMessage(m);
+    setCode(c);
+    setLineNo(l);
+    setFileName(fname);
+  }
+
+  Exception& Exception::setMessage(std::string m) {
+    message = m;
+    return *this;
+  }  
   /* End Exception Definition */
 }

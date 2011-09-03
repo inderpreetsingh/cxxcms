@@ -4,10 +4,6 @@
 #include <map>
 #include <string>
 #include <memory>
-#include <list>
-#include <cmath>
-#include <algorithm>
-#include <memory>
 
 /*
  * This namespace CGI will contain all CGI-related functions and classes.
@@ -22,8 +18,8 @@ namespace CGI {
    * Tuple is one single element of the map using std::pair<string, string>
    */
 
-  typedef std::map<const char*, const char*> Dict_t;
-  typedef std::pair<const char*, const char*> Tuple_t;
+  typedef std::map<const std::string, const std::string> Dict_t;
+  typedef std::pair<const std::string, const std::string> Tuple_t;
   typedef std::auto_ptr <Dict_t> Dict_ptr_t;
   
   /*
@@ -38,8 +34,6 @@ namespace CGI {
 
   class Parser {
   private:
-
-    std::list <char*> Strings;
 
     /*
      * The raw query string as obtained from getenv('QUERY_STRING')
@@ -58,27 +52,22 @@ namespace CGI {
   public:
 
     /*
-     * Templated constructor accepting some kind of string
-     * Calls setQstr(T)
+     * Constructor accepting std::string
+     * Calls setQstr()
      */
 
-    template <typename T>
-    Parser(T s) {
+    Parser(std::string s) {
       setQstr(s);
     }
 
     Parser() {
     }
 
-    ~Parser();
-
     /*
-     * Templated property setter accepting some kind of string
-     * String type checked with Common::is_string()
+     * Property setter accepting std::string
      */
 
-    template <typename T>
-    const Parser& setQstr(T);
+    const Parser& setQstr(std::string);
 
     /*
      * Property retriever in type const char*
@@ -100,63 +89,12 @@ namespace CGI {
     void clear() {
       this->~Parser();
     }
-
   };
 
   /*
-   * Templated functions CANNOT be declared somewhere and defined somewhere else
-   * Hence, defining them here.
+   * Hex decoder
    */
 
-  template <typename T>
-  const Parser& Parser::setQstr(T s) {
-
-    /*
-     * We're using `s' to set value of a string
-     * Hence it must be a string compatible type
-     */
-
-    if(!Common::is_string(s))
-      throw Common::Exception("Invalid type specified to URL::Parser::Parser", INVALID_TYPE, __LINE__, __FILE__);
-
-    source = s;
-    return *this;    
-  }
-
-  /*
-   * Templated function decodeHex()
-   * Input: HEX String (with the % symbol, for example %AA)
-   * Output: The ASCII character
-   * Note that type of string must be one of those defined in Common::is_string()
-   */
-
-  template <typename T>
-  char decodeHex(T s) {
-    if(!Common::is_string(s))
-      throw Common::Exception("Invalid type passed to URL::decodeHex()", INVALID_TYPE);
-
-    std::string source = s;
-    source.erase(0, 1); // Removing % from %XX
-    
-    unsigned int i = 0;
-    unsigned int j = source.size() - 1;
-    unsigned int result = 0;
-
-    /*
-     * Convert the string to upper case
-     */
-    
-    std::transform(source.begin(), source.end(), source.begin(), (int (*)(int)) std::toupper);
-    // (int (*) (int)) added so that the proper toupper() in cctype is chosen instead of the one in locale.
-
-    for (i = 0; i < source.size(); i++, j--)
-        if (source.at(j) >= '0' and source.at(j) <= '9')
-            result += (source.at(j) - '0') * std::pow(16, i);
-        else if (source.at(j) >= 'A' and source.at(j) <= 'F')
-	  result += ((source.at(j) - 'A') + 10) * std::pow(16, i); // eg: ('B' - 'A') + 10 = (66 - 65) + 10 = 11
-	else
-	  throw Common::Exception("Invalid HEX symbol found in Common::decodeHex", INVALID_HEX_SYMBOL);       
-    return result;
-  }
+  int decodeHex(std::string);  
 }
 #endif

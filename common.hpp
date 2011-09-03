@@ -2,10 +2,8 @@
 #define COMMON_H 1
 #include <cstddef>
 #include <string>
-#include <list>
 #include <typeinfo>
-#include <string>
-#include <cassert>
+#include <list>
 
 namespace Common {
 
@@ -28,11 +26,10 @@ namespace Common {
   public:
 
     /*
-     * The constructor (templated)
+     * The constructor
      */
 
-    template <typename T>
-    Exception(T, int = 0, unsigned int = 0,  const char* = NULL);
+    Exception(std::string, int = 0, unsigned int = 0,  const char* = NULL);
 
     /* Define type conversion functions
      * If this object is converted into a char*, then it will return the message
@@ -56,8 +53,7 @@ namespace Common {
      * These are called by the constructor and can be called directly
      */
 
-    template <typename T>
-    Exception& setMessage(T);
+    Exception& setMessage(std::string);
     Exception& setCode(int);
     Exception& setLineNo(unsigned int);
     Exception& setFileName(const char*);
@@ -70,7 +66,6 @@ namespace Common {
    * defined somewhere else.
    * Hence, defining them here.
    */
-
   
   /*
    * Function returns true if the given type is some form of string
@@ -99,20 +94,5 @@ namespace Common {
 	return true;
     return false;    
   }
-
-  template <typename T>
-  Exception::Exception(T m, int c, unsigned int l, const char * fname) {
-    setMessage(m);
-    setCode(c);
-    setLineNo(l);
-    setFileName(fname);
-  }
-
-  template <typename T>
-  Exception& Exception::setMessage(T m) {
-    assert(Common::is_string(m) == true);
-    message = m;
-    return *this;
-  }  
 }
 #endif
