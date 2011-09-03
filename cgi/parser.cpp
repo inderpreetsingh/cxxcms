@@ -39,22 +39,22 @@ namespace CGI {
         std::string copy = getQstr(), extract = "";
         _sanitize(copy);
 
-	size_t amp_pos = std::string::npos, eq_pos = std::string::npos, percent_pos = std::string::npos;
+	size_t delimiter = std::string::npos;
 	Dict_ptr_t ret (new Dict_t);
 	std::string key = "", value = "";
 
     do {
-      if((amp_pos = copy.find('&')) != std::string::npos) {
-	extract = copy.substr(0, amp_pos);
-	copy.erase(0, amp_pos + 1);
+      if((delimiter = copy.find('&')) != std::string::npos or (delimiter = copy.find(';')) != std::string::npos) {
+	extract = copy.substr(0, delimiter);
+	copy.erase(0, delimiter + 1);
       }
       else {
 	extract = copy;
 	copy.clear();
       }
-      if((eq_pos = extract.find('=')) != std::string::npos) {
-	key  = extract.substr(0, eq_pos);
-	value = extract.substr(eq_pos + 1);
+      if((delimiter = extract.find('=')) != std::string::npos) {
+	key  = extract.substr(0, delimiter);
+	value = extract.substr(delimiter + 1);
 	extract.clear();
       }
       else {
@@ -62,16 +62,16 @@ namespace CGI {
 	value = "";
 	extract.clear();
       }
-      if((percent_pos = key.find('%')) != std::string::npos)
-	key.replace(percent_pos, percent_pos + 3, 1, decodeHex(key.substr(percent_pos, percent_pos + 3)));
+      if((delimiter = key.find('%')) != std::string::npos)
+	key.replace(delimiter, delimiter + 3, 1, decodeHex(key.substr(delimiter, delimiter + 3)));
 
       /*
        * For some strange reason value.find() returns pos + 1 for position for %
        * Hence a hack has been added here. If troublesome, remove -1 and change 4 to 3.
        */
       
-      if((percent_pos = value.find('%') != std::string::npos))
-	value.replace(percent_pos-1, percent_pos + 4, 1, decodeHex(value.substr(percent_pos-1, percent_pos + 4)));
+      if((delimiter = value.find('%') != std::string::npos))
+	value.replace(delimiter-1, delimiter + 4, 1, decodeHex(value.substr(delimiter-1, delimiter + 4)));
       
       ret->insert(Tuple_t(key, value));
     }
