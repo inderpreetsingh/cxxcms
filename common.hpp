@@ -2,15 +2,15 @@
 #define COMMON_H 1
 #include <cstddef>
 #include <string>
-#include <list>
 #include <typeinfo>
+#include <list>
 
 namespace Common {
 
   /*
    * Exception Class
    * This class will be thrown whenever an exception occurs
-   * Converting this class to char* will return the message
+   * Converting this class to char* or std::string will return the message
    * Converting this class to int will return the code
    */
 
@@ -18,23 +18,18 @@ namespace Common {
 
   private:
 
-    char* message;
+    std::string message;
     int code;
-    size_t length;
+    unsigned int line;
+    std::string file;
 
   public:
 
-    /* The constructor
-     * Accepts input for message as char *
+    /*
+     * The constructor
      */
 
-    Exception(char *, int);
-
-    /* The destructor
-     * Required to deallocate message memory
-     */
-
-    ~Exception();
+    Exception(std::string, int = 0, unsigned int = 0,  const char* = NULL);
 
     /* Define type conversion functions
      * If this object is converted into a char*, then it will return the message
@@ -50,13 +45,18 @@ namespace Common {
     
     const char* getMessage() const; 
     int getCode() const;
+    unsigned int getLineNo() const;
+    const char* getFileName() const;
+    const char* getCMessage() const; // Returns the complete message of the form [Error X] on line #L of file F, called by object-char converter
 
     /* Functions to set object properties
      * These are called by the constructor and can be called directly
      */
-    
-    Exception& setMessage(const char *);
-    Exception& setCode(int);        
+
+    Exception& setMessage(std::string);
+    Exception& setCode(int);
+    Exception& setLineNo(unsigned int);
+    Exception& setFileName(const char*);
   };
 
   /* End of Exception Class */
@@ -66,8 +66,8 @@ namespace Common {
    * defined somewhere else.
    * Hence, defining them here.
    */
-
-    /*
+  
+  /*
    * Function returns true if the given type is some form of string
    * C-style strings, const strings, etc, etc
    */
@@ -93,6 +93,6 @@ namespace Common {
       if(i->compare(source_name) == 0)
 	return true;
     return false;    
-  }      
+  }
 }
 #endif

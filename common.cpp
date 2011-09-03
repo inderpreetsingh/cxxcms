@@ -2,24 +2,18 @@
 #include <cstring>
 #include <cstddef>
 #include <new>
+#include <sstream>
 
 namespace Common {
 
   /* Definition of the Exception Class */
-
-  Exception::Exception(char * str, int code = 0) {
-    message = NULL;
-    length = 0;
-    setMessage(str);
-    setCode(code);
-  }
 
   /* Type conversion functions.
    * See common.hpp for more info
    */
   
   Exception::operator const char*() const {
-    return getMessage();
+    return getCMessage();
   }
 
   Exception::operator int() const {
@@ -29,31 +23,37 @@ namespace Common {
   /* Functions to get object properties */
 
   const char* Exception::getMessage() const {
-    return message;
+    return message.c_str();
   }
 
   int Exception::getCode() const {
     return code;
   }
 
-  /* Functions to set object properties */
+  unsigned int Exception::getLineNo() const {
+    return line;
+  }
 
-  Exception& Exception::setMessage(const char* str) {
-    size_t len = std::strlen(str);
+  const char* Exception::getFileName() const {
+    return file.c_str();
+  }
 
+  const char* Exception::getCMessage() const {
     /*
-     * Memory must be allocated if the error message present has smaller
-     * length than the given one
+     * [Error X] on line #L of file F
+     * Using StringStream
      */
-    
-    if(length < len) {
-      char *tmp = new char[len];
-      if(message and length > 0)
-	this->~Exception();
-      message = tmp;
+    std::stringstream s;
+    s << "[" << getMessage() << "]" << " on line #" << getLineNo() << " of file " << getFileName();
+    return s.str().c_str();
+  }
+
+  Exception& Exception::setFileName(const char* str) {
+    if(!str) {
+      file = "";
+      return *this;
     }
-    std::strcpy(message, str);
-    length = len;
+    file  = str;
     return *this;
   }
 
@@ -62,14 +62,21 @@ namespace Common {
     return *this;
   }
 
-  /*
-   * Deallocate memory allocate for message
-   */
-
-  Exception::~Exception() {
-    if(message and length)
-      delete [] message;
+  Exception& Exception::setLineNo(unsigned int l) {
+    line = l;
+    return *this;
   }
 
+  Exception::Exception(std::string m, int c, unsigned int l, const char * fname) {
+    setMessage(m);
+    setCode(c);
+    setLineNo(l);
+    setFileName(fname);
+  }
+
+  Exception& Exception::setMessage(std::string m) {
+    message = m;
+    return *this;
+  }  
   /* End Exception Definition */
 }
