@@ -7,41 +7,41 @@
 
 namespace CGI {
 
-    /*
-     * Implementation of the Parser class
-     */
+  /*
+   * Implementation of the Parser class
+   */
 
-    /*
-     * Constructor has been defined in the header itself
-     * because it should be inlined, it conatins just one function call to setQstr()
-     */
+  /*
+   * Constructor has been defined in the header itself
+   * because it should be inlined, it conatins just one function call to setQstr()
+   */
 
-    void Parser::_sanitize(std::string& s, size_t n = 1) {
-        size_t i;
-        for (i = n; i < s.size(); i++) {
-            if (s.at(i) == '&' || s.at(i) == '=' || s.at(i) == ';') {
-                if (i == 0 or i >= s.size()) break;
-                if (s.at(i-1) == '&' || s.at(i-1) == '=' || s.at(i-1) == ';') {
-                    s.erase(i,1);
-                    _sanitize(s,i);
-                }
-            }
-        }
-        
-        while (s.at(0) == '=' || s.at(0) == '&' || s.at(0) == ';')
-            s.erase(0,1);
-      
-        while (s.at(s.size()-1) == '=' || s.at(s.size()-1) == '&' || s.at(s.size()-1) == ';')
-            s.erase(s.size()-1,1);
+  void Parser::_sanitize(std::string& s, size_t n = 1) {
+    size_t i;
+    for (i = n; i < s.size(); i++) {
+      if (s.at(i) == '&' || s.at(i) == '=' || s.at(i) == ';') {
+	if (i == 0 or i >= s.size()) break;
+	if (s.at(i-1) == '&' || s.at(i-1) == '=' || s.at(i-1) == ';') {
+	  s.erase(i,1);
+	  _sanitize(s,i);
+	}
+      }
     }
+        
+    while (s.at(0) == '=' || s.at(0) == '&' || s.at(0) == ';')
+      s.erase(0,1);
+      
+    while (s.at(s.size()-1) == '=' || s.at(s.size()-1) == '&' || s.at(s.size()-1) == ';')
+      s.erase(s.size()-1,1);
+  }
 
-    Dict_ptr_t Parser::parse() {    
-        std::string copy = getQstr(), extract = "";
-        _sanitize(copy);
+  Dict_ptr_t Parser::parse() {    
+    std::string copy = getQstr(), extract = "";
+    _sanitize(copy);
 
-	size_t delimiter = std::string::npos;
-	Dict_ptr_t ret (new Dict_t);
-	std::string key = "", value = "";
+    size_t delimiter = std::string::npos;
+    Dict_ptr_t ret (new Dict_t);
+    std::string key = "", value = "";
 
     do {
       if((delimiter = copy.find('&')) != std::string::npos or (delimiter = copy.find(';')) != std::string::npos) {
@@ -79,11 +79,11 @@ namespace CGI {
     return ret;
   }	
     
-    const char* Parser::getQstr() const {
-        if(!source.size())
-            throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET, __LINE__, __FILE__);        
-        return source.c_str();
-    }
+  const char* Parser::getQstr() const {
+    if(!source.size())
+      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET, __LINE__, __FILE__);        
+    return source.c_str();
+  }
 
   const Parser& Parser::setQstr(std::string s) {
     source = s;

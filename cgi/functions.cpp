@@ -23,12 +23,12 @@ namespace CGI {
     // (int (*) (int)) added so that the proper toupper() in cctype is chosen instead of the one in locale.
 
     for (i = 0; i < source.size(); i++, j--)
-        if (source.at(j) >= '0' and source.at(j) <= '9')
-            result += (source.at(j) - '0') * std::pow(16, i);
-        else if (source.at(j) >= 'A' and source.at(j) <= 'F')
-	  result += ((source.at(j) - 'A') + 10) * std::pow(16, i); // eg: ('B' - 'A') + 10 = (66 - 65) + 10 = 11
-	else
-	  throw Common::Exception("Invalid HEX symbol found in Common::decodeHex", INVALID_HEX_SYMBOL);       
+      if (source.at(j) >= '0' and source.at(j) <= '9')
+	result += (source.at(j) - '0') * std::pow(16, i);
+      else if (source.at(j) >= 'A' and source.at(j) <= 'F')
+	result += ((source.at(j) - 'A') + 10) * std::pow(16, i); // eg: ('B' - 'A') + 10 = (66 - 65) + 10 = 11
+      else
+	throw Common::Exception("Invalid HEX symbol found in Common::decodeHex", INVALID_HEX_SYMBOL);       
     return result;
   }
 }
