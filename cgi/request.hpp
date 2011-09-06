@@ -1,3 +1,5 @@
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
 #include <cgi/cgi.hpp>
 
 namespace CGI {
@@ -20,8 +22,7 @@ namespace CGI {
      * HTTP POST Data
      */
 
-    Dict_t env;
-    Dict_t& get, post; // Declared as a reference because the actual parsing will take place in CGI::Parser
+    Dict_t env, *get, *post; // Declared as pointer because the actual parsing will take place in CGI::Parser
 
   public:
 
@@ -56,3 +57,4 @@ namespace CGI {
 
   };
 }
+#endif

@@ -25,7 +25,7 @@ namespace CGI {
    * Error codes for our URL namespace
    */
 
-  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL };
+  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL, ENV_NOT_FOUND };
 
   /*
    * Hex decoder
