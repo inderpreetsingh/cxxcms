@@ -1,5 +1,5 @@
-#ifndef COMMON_EXCEPTION_H
-#define COMMON_EXCEPTION_H
+#ifndef COMMON_EXCEPTION_HPP
+#define COMMON_EXCEPTION_HPP
 #include <common/common.hpp>
 
 namespace Common {

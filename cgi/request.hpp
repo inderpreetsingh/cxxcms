@@ -1,5 +1,5 @@
-#ifndef REQUEST_HPP
-#define REQUEST_HPP
+#ifndef CGI_REQUEST_HPP
+#define CGI_REQUEST_HPP
 #include <cgi/cgi.hpp>
 
 namespace CGI {
