@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cctype>
-
+#include <cstdio>
 
 namespace CGI {
 
