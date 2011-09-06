@@ -1,0 +1,17 @@
+CPPCMS
+-------
+The C++ CMS Project, an application to run websites, etc. using C++. 
+We have a lot of CMSes in Python/PHP, but not in C++. C++, is one of
+the fastest languages and this application is for sites, which expect
+a large number of hits. We all know that Facebook designed a PHP to C++
+converter because PHP was very slow and lagging the site when the site 
+started getting a large number of hits. This is an open source project, 
+licensed under GNU GPL v3. The project mailing list is located at 
+http://groups.google.com/group/cppcms
+
+Please note: This project has no relation with the C++ Web Development 
+Framework as described at http://en.wikipedia.org/wiki/CppCMS and 
+http://cppcms.sf.net. We are considering a rename on this and a decision 
+will be taken soon.
+
+
