@@ -22,7 +22,7 @@ namespace CGI {
      * HTTP POST Data
      */
 
-    Dict_t env, *get, *post; // Declared as pointer because the actual parsing will take place in CGI::Parser
+    Dict_ptr_t env, get, post;
 
   public:
 
@@ -46,7 +46,7 @@ namespace CGI {
      * Basically, it contains all the request data.
      */
 
-    Dict_t getData(unsigned short option = GET | POST | COOKIE | ENV);
+    Dict_ptr_t getData(unsigned short option = GET | POST | COOKIE | ENV);
 
     /*
      * This function will return the value of the parameter specified.
