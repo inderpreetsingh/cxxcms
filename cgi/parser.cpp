@@ -44,7 +44,8 @@ namespace CGI {
     std::string key = "", value = "";
 
     do {
-      if((delimiter = copy.find('&')) != std::string::npos or (delimiter = copy.find(';')) != std::string::npos) {
+      if((delimiter = copy.find('&')) != std::string::npos or
+	 (delimiter = copy.find(';')) != std::string::npos) {
 	extract = copy.substr(0, delimiter);
 	copy.erase(0, delimiter + 1);
       }
@@ -81,7 +82,7 @@ namespace CGI {
     
   const char* Parser::getQstr() const {
     if(!source.size())
-      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", QS_NOT_SET, __LINE__, __FILE__);        
+      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", E_QS_NOT_SET, __LINE__, __FILE__);        
     return source.c_str();
   }
 

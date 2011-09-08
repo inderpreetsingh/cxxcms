@@ -17,16 +17,21 @@ namespace CGI {
 
     /*
      * Three dictionaries to hold data related to
-     * environment variables
+     * Environment variables
      * HTTP GET Data
      * HTTP POST Data
+     * HTTP COOKIE Data
      */
 
-    Dict_ptr_t env, get, post;
+    Dict_ptr_t env, get, post, cookie;
 
   public:
 
-    enum option_t { GET, POST, COOKIE, ENV };
+    enum {
+      OPT_GET,
+      OPT_POST,
+      OPT_COOKIE,
+      OPT_ENV };
 
     /*
      * Constructor, accepts array of strings (for env and optionally pointer to file- stdin)
@@ -46,14 +51,14 @@ namespace CGI {
      * Basically, it contains all the request data.
      */
 
-    Dict_ptr_t getData(unsigned short option = GET | POST | COOKIE | ENV);
+    Dict_ptr_t getData(unsigned short option = OPT_GET | OPT_POST | OPT_COOKIE | OPT_ENV);
 
     /*
      * This function will return the value of the parameter specified.
      * Option will be by default GET, POST and COOKIE.
      */
 
-    std::string getParam(std::string, unsigned short option = GET | POST | COOKIE);
+    std::string getParam(std::string, unsigned short option = OPT_GET | OPT_POST | OPT_COOKIE);
 
   };
 }

@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cctype>
 #include <cstdio>
+#include <cstring>
 
 namespace CGI {
 
@@ -25,7 +26,12 @@ namespace CGI {
    * Error codes for our URL namespace
    */
 
-  enum err_t { QS_NOT_SET, INVALID_TYPE, INVALID_HEX_SYMBOL, ENV_NOT_FOUND, INVALID_FILE_PTR, INVALID_CONTENT_LENGTH };
+  enum {
+    E_QS_NOT_SET,
+    E_INVALID_HEX_SYMBOL,
+    E_ENV_NOT_FOUND,
+    E_INVALID_FILE_PTR,
+    E_INVALID_CONTENT_LENGTH };
 
   /*
    * Hex decoder

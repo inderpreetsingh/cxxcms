@@ -28,7 +28,7 @@ namespace CGI {
       else if (source.at(j) >= 'A' and source.at(j) <= 'F')
 	result += ((source.at(j) - 'A') + 10) * std::pow(16, i); // eg: ('B' - 'A') + 10 = (66 - 65) + 10 = 11
       else
-	throw Common::Exception("Invalid HEX symbol found in Common::decodeHex", INVALID_HEX_SYMBOL);       
+	throw Common::Exception("Invalid HEX symbol found in Common::decodeHex", E_INVALID_HEX_SYMBOL);       
     return result;
   }
 }
