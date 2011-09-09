@@ -33,7 +33,7 @@ namespace Common {
     for(std::list <std::string>::iterator i = tnames.begin(); i != tnames.end(); i++)
       if(i->compare(source_name) == 0)
 	return true;
-    return false;    
+    return false;
   }
 }
 #endif

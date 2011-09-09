@@ -40,7 +40,7 @@ namespace Common {
      * These can be directly used, or type conversion functions will call these
      */
     
-    const char* getMessage() const; 
+    const char* getMessage() const;
     int getCode() const;
     unsigned int getLineNo() const;
     const char* getFileName() const;

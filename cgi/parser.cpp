@@ -43,7 +43,7 @@ namespace CGI {
     Dict_ptr_t ret (new Dict_t);
     std::string key = "", value = "";
 
-    do {
+    while(copy.size()) {
       if((delimiter = copy.find('&')) != std::string::npos or
 	 (delimiter = copy.find(';')) != std::string::npos) {
 	extract = copy.substr(0, delimiter);
@@ -76,18 +76,17 @@ namespace CGI {
       
       ret->insert(Tuple_t(key, value));
     }
-    while(copy.size());
     return ret;
   }	
     
   const char* Parser::getQstr() const {
     if(!source.size())
-      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", E_QS_NOT_SET, __LINE__, __FILE__);        
+      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", E_QS_NOT_SET, __LINE__, __FILE__);
     return source.c_str();
   }
 
   const Parser& Parser::setQstr(std::string s) {
     source = s;
-    return *this;    
+    return *this;
   }
 }

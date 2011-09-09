@@ -14,9 +14,8 @@ namespace CGI {
 
     while(*envp) {
       std::string tmp = *envp;
-      size_t pos = tmp.find('=');
-      Tuple_t t (tmp.substr(0, pos), tmp.substr(pos + 1));
-      env->insert(t);
+      size_t delimiter = tmp.find('=');
+      env->insert(Tuple_t(tmp.substr(0, delimiter), tmp.substr(delimiter + 1)));
       envp++;
     }
 
@@ -46,7 +45,7 @@ namespace CGI {
       
       char *buf = new char[length + 1];
       std::memset(buf, 0, length + 1);
-      std::fread(buf, 1, length, in); 
+      std::fread(buf, 1, length, in);
       post = CGI::Parser(buf).parse();
       delete [] buf;
       buf = NULL;
@@ -54,18 +53,37 @@ namespace CGI {
 
     std::string cookies = getEnv("HTTP_COOKIE");
 
-    /*    if(cookies.size()) {
-      size_t pos;
-      do {
-      if((pos = cookies.find(';')) != std::string::npos) {*/
-	  
-      
+    while(cookies.size()) {
+      size_t delimiter = std::string::npos;
+      std::string key = "", value = "", extract = "";
+      if((delimiter = cookies.find(';')) != std::string::npos) {
+	extract = cookies.substr(0, delimiter);
+	cookies.erase(0, delimiter + 1);
+      }
+      else {
+	extract = cookies;
+	cookies.clear();
+      }
+      if((delimiter = extract.find('=')) != std::string::npos) {
+	key = extract.substr(0, delimiter);
+	value = extract.substr(delimiter + 1);
+      }
+      else {
+	key = extract;
+	value = "";
+      }
+      cookie->insert(Tuple_t(key, value));
+    }
   }
 
   std::string Request::getEnv(std::string name) {
-    if(!env->count(name))
-      throw Common::Exception("Environment variable " + name + "not found", E_ENV_NOT_FOUND, __LINE__, __FILE__);
-    return env->find(name)->second;
+    Dict_t::iterator i;
+    if((i = env->find(name)) != env->end())
+      return i->second;
+    /*
+     * We have return statement above. If code has come here, it means none was found, so we throw exception.
+     */
+    throw Common::Exception("Environment variable " + name + "not found", E_ENV_NOT_FOUND, __LINE__, __FILE__);
   }
 
   // option below, is an optional parameter. See request.hpp
@@ -83,19 +101,32 @@ namespace CGI {
     if(option & OPT_ENV)
       for(i = env->begin(); i != env->end(); i++)
 	ret->insert(*i);
-    /*    if(opiton & COOKIE)
+    if(opiton & COOKIE)
       for(i = cookie.begin(); i != cookie.end(); i++)
-      ret->insert(*i);*/
+	ret->insert(*i);
     return ret;
   }
 
   // option below is an optional parameter. See request.hpp
 
   std::string Request::getParam(std::string name, unsigned short option) {
-    std::string result = "";
 
-    // What order preference should we use? GPCSE? Or something else?
+    // Order preference - GPC. For environment variables, use getEnv()
 
-    //    if(option & GET)
+    Dict_t::iterator i;
+
+    if(option & OPT_GET)
+      if((i = get->find(name)) != get->end())
+	return i->second;
+    if(option & OPT_POST)
+      if((i = post->find(name)) != post->end())
+	return i->second;
+    if(option & OPT_COOKIE)
+      if((i = cookie->find(name)) != cookie->end())
+	return i->second;
+    /*
+     * We have return statements above. If code has come here, it means none was found, so we throw exception.
+     */
+    throw Common::Exception("Request parameter " + name + " not found in GET, POST and COOKIE data", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
   }
 }
