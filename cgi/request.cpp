@@ -58,7 +58,7 @@ namespace CGI {
       std::string key = "", value = "", extract = "";
       if((delimiter = cookies.find(';')) != std::string::npos) {
 	extract = cookies.substr(0, delimiter);
-	cookies.erase(0, delimiter + 1);
+	cookies.erase(0, delimiter + 2); // +2 because we have a space between multiple cookies. NAME1=VALUE1; NAME2=VALUE2; NAME3=VALUE3
       }
       else {
 	extract = cookies;
