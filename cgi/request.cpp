@@ -48,7 +48,6 @@ namespace CGI {
       std::fread(buf, 1, length, in);
       post = CGI::Parser(buf).parse();
       delete [] buf;
-      buf = NULL;
     }
 
     std::string cookies = getEnv("HTTP_COOKIE");

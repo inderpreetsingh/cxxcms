@@ -39,5 +39,11 @@ namespace CGI {
    */
 
   int decodeHex(std::string);
+
+  /*
+   * Hex encoder
+   */
+
+  std::string encodeHex(std::string);
 }
 #endif
