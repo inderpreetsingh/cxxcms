@@ -61,6 +61,7 @@ namespace CGI {
                 hex[i++] = rem + '0';
             number /= 16;        
         } hex[i] = '\0';
+        reverseString(hex);
         return hex;
     }
 
