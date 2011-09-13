@@ -1,6 +1,4 @@
 #include <cgi/cgi.hpp>
-#include <string.h>
-#include <stdio.h>
 
 namespace CGI {
 
@@ -34,44 +32,35 @@ namespace CGI {
     return result;
   }
 
-
-    
-    void reverseString(char *string)
-    {
-        int i, j = 0;
-        char rev[20];
-        for (i = strlen(string) - 1; i >= 0; i--) {
-            rev[j++] = string[i];
-        } rev[j] = '\0';
-
-        strcpy(string, rev);        
+  std::string& encodeHex(std::string& src) {
+    /*
+     * Characters to be encoded:
+     * 0-31, 128-255
+     * 36, 38, 43, 44, 47, 58, 59, 61, 63, 64, 127
+     * 32, 34, 60, 62, 35. 37, 123, 125, 124, 92
+     * 91, 93, 96, 126, 94
+     * See http://www.blooberry.com/indexdot/html/topics/urlencoding.htm
+     */
+    size_t i;
+    int array[] = {43, 44, 47, 63, 64, 96};
+    std::set <int> toBeReplaced (array);
+    for(i = 0; i < src.size(); i++) {
+      /*
+       * Encode the first set of characters, stated above
+       */
+      char current = src.at(i);
+      if(current <= 32 or
+	 (current >= 34 and current <= 38) or
+	 (current >= 58 and current <= 61) or
+	 (current >= 91 and current <= 94) or
+	 current >= 123 or
+	 toBeReplaced.count(current)) {
+	  char *tmp = new char[4]; // %XX + NUL
+	  std::sprintf(tmp, "%X", (int) current);
+	  src.replace(i, 1, tmp);
+	  delete [] tmp;
+      }
     }
-
-
-    char* convertToHex(int number)
-    {
-        char hex[20];
-        int rem, i = 0;
-
-        while (number > 0) {
-            rem = number % 16;
-            if (rem >= 10)
-                hex[i++] = ('A'-10) + rem;
-            else
-                hex[i++] = rem + '0';
-            number /= 16;        
-        } hex[i] = '\0';
-        reverseString(hex);
-        return hex;
-    }
-
-
-    std::string encodeHex(std::string s)
-    {
-        std::string hexEncoded;
-        for (int i = 0; i < s.size(); i++)
-            hexEncoded.append((std::string)convertToHex(s.at(i)));
-        return hexEncoded;
-    }
-
+    return src;
+  }
 }

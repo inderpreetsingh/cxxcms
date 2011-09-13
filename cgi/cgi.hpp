@@ -9,6 +9,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <set>
 
 namespace CGI {
 
@@ -44,6 +45,6 @@ namespace CGI {
    * Hex encoder
    */
 
-  std::string encodeHex(std::string);
+  std::string& encodeHex(std::string&);
 }
 #endif
