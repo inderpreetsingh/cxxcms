@@ -43,7 +43,7 @@ namespace CGI {
      */
     size_t i;
     int array[] = {43, 44, 47, 63, 64, 96};
-    std::set <int> toBeReplaced (array);
+    std::set <int> toBeReplaced (array, array + 5);
     for(i = 0; i < src.size(); i++) {
       /*
        * Encode the first set of characters, stated above
