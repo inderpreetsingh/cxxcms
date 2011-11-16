@@ -16,3 +16,10 @@ will be taken soon.
 
 The project's main repository is at https://bitbucket.org/nileshgr/cxxcms and
 there is a git mirror at https://github.com/nileshgr/cxxcms
+
+Issues/bug reports/feature requests should go to https://bitbucket.org/nileshgr/cxxcms/issues
+
+The git mirror is read-write, people can contribute there as well and merging will be taken care
+of by people who use both the repositories (via hg-git).
+
+Project wiki is located at https://bitbucket.org/nileshgr/cxxcms/wiki. The wiki at present contains useful information for new contributors.
