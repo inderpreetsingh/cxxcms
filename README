@@ -7,7 +7,7 @@ a large number of hits. We all know that Facebook designed a PHP to C++
 converter because PHP was very slow and lagging the site when the site 
 started getting a large number of hits. This is an open source project, 
 licensed under GNU GPL v3. The project mailing list is located at 
-http://groups.google.com/group/cppcms
+http://groups.google.com/group/cxxcms
 
 Please note: This project has no relation with the C++ Web Development 
 Framework as described at http://en.wikipedia.org/wiki/CppCMS and 
