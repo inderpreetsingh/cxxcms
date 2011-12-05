@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstring>
 #include <set>
+#include <ctime>
 
 namespace CGI {
 
@@ -21,7 +22,7 @@ namespace CGI {
 
   typedef std::map<const std::string, const std::string> Dict_t;
   typedef std::pair<const std::string, const std::string> Tuple_t;
-  typedef std::auto_ptr <Dict_t> Dict_ptr_t;
+  typedef std::unique_ptr <Dict_t> Dict_ptr_t;
   
   /*
    * Error codes for our URL namespace

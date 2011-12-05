@@ -20,7 +20,7 @@ namespace CGI {
     size_t i;
     for (i = n; i < s.size(); i++) {
       if (s.at(i) == '&' || s.at(i) == '=' || s.at(i) == ';') {
-	if (i == 0 or i >= s.size()) break;
+	if (i == 0) break;
 	if (s.at(i-1) == '&' || s.at(i-1) == '=' || s.at(i-1) == ';') {
 	  s.erase(i,1);
 	  _sanitize(s,i);
