@@ -34,7 +34,8 @@ namespace CGI {
     E_ENV_NOT_FOUND,
     E_PARAM_NOT_FOUND,
     E_INVALID_FILE_PTR,
-    E_INVALID_CONTENT_LENGTH };
+    E_INVALID_CONTENT_LENGTH,
+    E_MORE_THAN_ONE_INSTANCE };
 
   /*
    * Hex decoder

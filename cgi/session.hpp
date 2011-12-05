@@ -43,8 +43,8 @@ namespace CGI {
      * Functions to add/get session data
      */
     
-    void addData(const std::string&, const std::string&);
-    const std::string& getData(const std::string&);
+    void addData(const std::string, const std::string);
+    std::string getData(const std::string);
 
     /*
      * This will load the session dictionary from the one passed as a parameter
@@ -68,6 +68,9 @@ namespace CGI {
      * Operator overloading for simple access to data
      */
     
-    std::string& operator[] (const std::string&);
+    std::string& operator[] (const std::string);
   };
+
+  Session::instances = 0; // initial value
+  
 }
