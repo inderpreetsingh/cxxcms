@@ -25,37 +25,37 @@ namespace CGI {
 
   }
 
-  std::string getSessionId() {
+  std::string Session::getSessionId() {
     return id;
   }
 
-  Dict_ptr_t getAll() {
+  Dict_ptr_t Session::getAll() {
     Dict_ptr_t ret (new Dict_t);
     *ret = data;
     return ret;
   }
 
-  void addData(const std::string key, const std::string value) {
+  void Session::addData(const std::string key, const std::string value) {
     id[key] = value;
   }
 
-  std::string getData(const std::string key) {
+  std::string Session::getData(const std::string key) {
     return id[key];
   }
 
-  void loadData(Dict_t& sdata) {
+  void Session::loadData(Dict_t& sdata) {
     data = sdata;
   }
 
-  void setExpireTime(time_t exp) {
+  void Session::setExpireTime(time_t exp) {
     expire = exp;
   }
 
-  time_t getExpireTime() {
+  time_t Session::getExpireTime() {
     return expire;
   }
 
-  std::string& operator[] (const std::string key) {
+  std::string& Session::operator[] (const std::string key) {
     return data[key];
   }
 
