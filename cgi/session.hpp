@@ -4,28 +4,35 @@
 namespace CGI {
 
   class Session {
-  private:
+  private:    
     std::string id;
     Dict_t data;
     time_t expire;
 
     /*
-     * We cannot have more than one instance of this class.
-     * This static variable will keep track of number of instances and
-     * prohibit creation of new instances if it is already 1 by throwing exception (constructor will throw exception)
+     * We have private constructors and copy-constructor
+     * because this class implements singleton pattern
      */
-    
-    static unsigned int instances;
+
+    Session();
+    Session(const std::string&);
+    Session(const Session&);
     
   public:
 
     /*
-     * The first constructor will start a new session
-     * The second one will load an exisiting session
+     * Method to return pointer to instance
+     * This function will create a new object of this class if instance does not exist
      */
-    
-    Session();
-    Session(const std::string&);
+
+    static Session* getInstance(const std::string = "");
+
+    /*
+     * Method to destroy the instance specified as argument
+     * This method MUST be called when the object's use is over, otherwise it might lead to memory leaks.
+     */
+
+    static void destroyInstance(Session*);
 
     /*
      * This function will return the session id of the class     
@@ -71,6 +78,4 @@ namespace CGI {
     std::string& operator[] (const std::string);
   };
 
-  Session::instances = 0; // initial value
-  
 }

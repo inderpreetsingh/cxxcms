@@ -20,8 +20,8 @@ namespace CGI {
    * Tuple is one single element of the map using std::pair<string, string>
    */
 
-  typedef std::map<const std::string, const std::string> Dict_t;
-  typedef std::pair<const std::string, const std::string> Tuple_t;
+  typedef std::map<std::string, std::string> Dict_t;
+  typedef std::pair<std::string, std::string> Tuple_t;
   typedef std::unique_ptr <Dict_t> Dict_ptr_t;
   
   /*

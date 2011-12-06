@@ -4,25 +4,45 @@
 namespace CGI {
 
   Session::Session() {
-    if(Session::instances == 1)
-      throw Common::Exception("More than one instance of the session class is not permitted", E_MORE_THAN_ONE_INSTANCE, __LINE__, __FILE__);
-    Session::instances = 1;
     uuid_t uu;
     char sid[16];
     uuid_generate(uu);
     uuid_unparse(uu, sid);
-    id(sid);
+    id = sid;
 
     // We need to set the default expire time as per the settings in configuration file
     // For now, it's one hour (hardcoded).
     
-    setExpireTime(time() + 3600);
-  }
+    setExpireTime(std::time(NULL) + (time_t) 3600);
+   }
 
   Session::Session(const std::string &sid) {
 
     // To be implemented, first storage system has to be setup [DB]
 
+  }
+
+  Session* Session::getInstance(std::string sid) {
+
+    /*
+     * This statement might be a bit confusing
+     * but static variables are initialized only once.
+     * Over consecutive calls, they retain their value.
+     */
+
+    static Session* ptr = NULL;
+
+    if(!ptr)
+      ptr = new Session;
+    if(!ptr and sid.size())
+      ptr = new Session(sid);
+
+    return ptr;
+  }
+
+  void Session::destroyInstance(Session* ptr) {
+    if(ptr)
+      delete ptr;
   }
 
   std::string Session::getSessionId() {
@@ -36,11 +56,11 @@ namespace CGI {
   }
 
   void Session::addData(const std::string key, const std::string value) {
-    id[key] = value;
+    data[key] = value;
   }
 
   std::string Session::getData(const std::string key) {
-    return id[key];
+    return data[key];
   }
 
   void Session::loadData(Dict_t& sdata) {
