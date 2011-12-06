@@ -35,11 +35,10 @@ namespace CGI {
 
     /*
      * Constructor accepting std::string
-     * Calls setQstr()
      */
 
     Parser(std::string s) {
-      setQstr(s);
+      source = s;
     }
 
     Parser() {
@@ -49,28 +48,27 @@ namespace CGI {
      * Property setter accepting std::string
      */
 
-    const Parser& setQstr(std::string);
+    const Parser& setQstr(std::string s) {
+      source = s;
+      return *this;
+    }
 
     /*
      * Property retriever in type const char*
      */
 
-    const char* getQstr() const;
+    const char* getQstr() const {
+      if(!source.size())
+	throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", E_QS_NOT_SET, __LINE__, __FILE__);
+      return source.c_str();
+    }
 
     /*
      * The parser, returns reference to auto_ptr'd Dict.
      */
 
     Dict_ptr_t parse();
-
-    /*
-     * Clear function. Calls the destructor to clear up everything allocated so far
-     * and the object is like a new instance.
-     */
-
-    void clear() {
-      this->~Parser();
-    }
+    
   };
 }
 #endif

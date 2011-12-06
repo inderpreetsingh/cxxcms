@@ -16,7 +16,7 @@ namespace CGI {
 
     Session();
     Session(const std::string&);
-    Session(const Session&);
+    Session(const Session&) = default;
     
   public:
 
@@ -32,13 +32,18 @@ namespace CGI {
      * This method MUST be called when the object's use is over, otherwise it might lead to memory leaks.
      */
 
-    static void destroyInstance(Session*);
+    static void destroyInstance(Session* ptr) {
+      if(ptr)
+	delete ptr;
+    }
 
     /*
      * This function will return the session id of the class     
      */
 
-    std::string getSessionId();
+    std::string getSessionId() {
+      return id;
+    }
 
     /*
      * Returns the whole dictionary
@@ -50,32 +55,45 @@ namespace CGI {
      * Functions to add/get session data
      */
     
-    void addData(const std::string, const std::string);
-    std::string getData(const std::string);
+    void addData(const std::string key, const std::string value) {
+      data[key] = value;
+    }
+    
+    std::string getData(const std::string key) {
+      return data[key];
+    }
 
     /*
      * This will load the session dictionary from the one passed as a parameter
      */
     
-    void loadData(Dict_t&);
+    void loadData(Dict_t& sdata) {
+      data = sdata;
+    }
 
     /*
      * Sets the expire time. time_t is defined in time.h (POSIX)
      */
     
-    void setExpireTime(time_t);
+    void setExpireTime(time_t exp) {
+      expire = exp;
+    }
 
     /*
      * Returns the expire time
      */
 
-    time_t getExpireTime();
+    time_t getExpireTime() {
+      return expire;
+    }
 
     /*
      * Operator overloading for simple access to data
      */
     
-    std::string& operator[] (const std::string);
+    std::string& operator[] (const std::string key) {
+      return data[key];
+    }
   };
 
 }

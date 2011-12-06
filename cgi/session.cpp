@@ -40,43 +40,9 @@ namespace CGI {
     return ptr;
   }
 
-  void Session::destroyInstance(Session* ptr) {
-    if(ptr)
-      delete ptr;
-  }
-
-  std::string Session::getSessionId() {
-    return id;
-  }
-
   Dict_ptr_t Session::getAll() {
     Dict_ptr_t ret (new Dict_t);
     *ret = data;
     return ret;
   }
-
-  void Session::addData(const std::string key, const std::string value) {
-    data[key] = value;
-  }
-
-  std::string Session::getData(const std::string key) {
-    return data[key];
-  }
-
-  void Session::loadData(Dict_t& sdata) {
-    data = sdata;
-  }
-
-  void Session::setExpireTime(time_t exp) {
-    expire = exp;
-  }
-
-  time_t Session::getExpireTime() {
-    return expire;
-  }
-
-  std::string& Session::operator[] (const std::string key) {
-    return data[key];
-  }
-
 }

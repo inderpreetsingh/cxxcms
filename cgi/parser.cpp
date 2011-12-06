@@ -77,16 +77,6 @@ namespace CGI {
       ret->insert(Tuple_t(key, value));
     }
     return ret;
-  }	
-    
-  const char* Parser::getQstr() const {
-    if(!source.size())
-      throw Common::Exception("Query string propery requested while it was never set! in URL::Parser::getQstr()", E_QS_NOT_SET, __LINE__, __FILE__);
-    return source.c_str();
   }
-
-  const Parser& Parser::setQstr(std::string s) {
-    source = s;
-    return *this;
-  }
+  
 }
