@@ -1,8 +1,16 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 #include <string>
+#include <global.hpp>
 
 namespace Common {
+
+  /*
+   * Error codes for the common namespace
+   */
+
+  enum {
+    E_CONFIG_LOAD };
 
 
   /*
@@ -12,10 +20,14 @@ namespace Common {
    * Converting this class to int will return the code
    */
 
+  /*
+   * Exception class won't be used very frequently, in the sense, it will be thrown only in case of error.
+   * Errors obviously are bound to occur rarely.
+   * Hence, functions of this class won't be inlined to keep the binary size simple in case the compiler inlines the code after requesition.
+   */
+
   class Exception {
-
   private:
-
     std::string message;
     int code;
     unsigned int line;
@@ -58,5 +70,28 @@ namespace Common {
   };
 
   /* End of Exception Class */
+
+  /* Configuration Manager class */
+
+  class Config {
+  private:
+    Dict_t data;
+  public:
+    /*
+     * We don't need multiple functions to parse the configuration, because it is job of pugixml
+     * The things are done in the constructor
+     * And we have the property getters
+     */
+    Config(std::string);
+    const std::string operator[](std::string key) {
+      return data[key];
+    }
+    const std::string getParam(std::string key) {
+      return data[key];
+    }
+  };
+
+  /* End Configuration Manager class */
+    
 }
 #endif
