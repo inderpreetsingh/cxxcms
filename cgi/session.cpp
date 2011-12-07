@@ -1,4 +1,4 @@
-#include <cgi/session.hpp>
+#include <cgi/cgi.hpp>
 #include <uuid/uuid.h>
 
 namespace CGI {

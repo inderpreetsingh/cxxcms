@@ -1,5 +1,7 @@
-#include <cgi/request.hpp>
-#include <cgi/parser.hpp>
+#include <cgi/cgi.hpp>
+#include <cstdio>
+#include <algorithm>
+#include <cstring>
 
 namespace CGI {
 
@@ -100,8 +102,8 @@ namespace CGI {
     if(option & OPT_ENV)
       for(i = env->begin(); i != env->end(); i++)
 	ret->insert(*i);
-    if(opiton & COOKIE)
-      for(i = cookie.begin(); i != cookie.end(); i++)
+    if(option & OPT_COOKIE)
+      for(i = cookie->begin(); i != cookie->end(); i++)
 	ret->insert(*i);
     return ret;
   }

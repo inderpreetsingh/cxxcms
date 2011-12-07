@@ -1,39 +1,62 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
-#include <list>
 #include <string>
-#include <typeinfo>
-#include <cstddef>
-#include <sstream>
 
 namespace Common {
 
+
   /*
-   * Function returns true if the given type is some form of string
-   * C-style strings, const strings, etc, etc
+   * Exception Class
+   * This class will be thrown whenever an exception occurs
+   * Converting this class to char* or std::string will return the message
+   * Converting this class to int will return the code
    */
 
-  template <typename T>
-  bool is_string(T s) {    
+  class Exception {
 
-    std::string tn[] = {
-      typeid(std::string).name(),
-      typeid(std::string&).name(),
-      typeid(std::string*).name(),
-      typeid(const std::string).name(),
-      typeid(const std::string&).name(),
-      typeid(const std::string*).name(),
-      typeid(char*).name(),
-      typeid(const char*).name()
-    };
+  private:
 
-    std::list <std::string> tnames (tn, tn + sizeof(tn) / sizeof(std::string));
-    std::string source_name = typeid(s).name();
+    std::string message;
+    int code;
+    unsigned int line;
+    std::string file;
 
-    for(std::list <std::string>::iterator i = tnames.begin(); i != tnames.end(); i++)
-      if(i->compare(source_name) == 0)
-	return true;
-    return false;
-  }
+  public:
+
+    /*
+     * The constructor
+     */
+
+    Exception(std::string, int = 0, unsigned int = 0,  const char* = NULL);
+
+    /* Define type conversion functions
+     * If this object is converted into a char*, then it will return the message
+     * If it is converted into a int, it will return the code
+     */
+
+    operator const char*() const;
+    operator int() const;
+
+    /* Functions to get object properties
+     * These can be directly used, or type conversion functions will call these
+     */
+    
+    const char* getMessage() const;
+    int getCode() const;
+    unsigned int getLineNo() const;
+    const char* getFileName() const;
+    const char* getCMessage() const; // Returns the complete message of the form [Error X] on line #L of file F, called by object-char converter
+
+    /* Functions to set object properties
+     * These are called by the constructor and can be called directly
+     */
+
+    Exception& setMessage(std::string);
+    Exception& setCode(int);
+    Exception& setLineNo(unsigned int);
+    Exception& setFileName(const char*);
+  };
+
+  /* End of Exception Class */
 }
 #endif

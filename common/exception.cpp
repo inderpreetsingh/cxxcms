@@ -1,4 +1,5 @@
-#include <common/exception.hpp>
+#include <common/common.hpp>
+#include <sstream>
 
 namespace Common {
 

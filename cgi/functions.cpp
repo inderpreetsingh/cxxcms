@@ -1,4 +1,7 @@
 #include <cgi/cgi.hpp>
+#include <cctype>
+#include <set>
+#include <algorithm>
 
 namespace CGI {
 
