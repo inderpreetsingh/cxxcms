@@ -63,8 +63,7 @@ namespace CGI {
       source = s;
     }
 
-    Parser() {
-    }
+    Parser() = default;
 
     /*
      * Property setter accepting std::string
