@@ -5,12 +5,6 @@
 
 namespace CGI {
 
-  /*
-   * Function decodeHex()
-   * Input: HEX String (with the % symbol, for example %AA)
-   * Output: Integer
-   */
-
   int decodeHex(std::string source) {
     source.erase(0, 1); // Removing % from %XX
     
@@ -35,7 +29,7 @@ namespace CGI {
     return result;
   }
 
-  std::string& encodeHex(std::string& src) {
+  std::string& encodeHex(std::string& source) {
     /*
      * Characters to be encoded:
      * 0-31, 128-255
@@ -47,11 +41,11 @@ namespace CGI {
     size_t i;
     int array[] = {43, 44, 47, 63, 64, 96};
     std::set <int> toBeReplaced (array, array + 5);
-    for(i = 0; i < src.size(); i++) {
+    for(i = 0; i < source.size(); i++) {
       /*
        * Encode the first set of characters, stated above
        */
-      char current = src.at(i);
+      char current = source.at(i);
       if(current <= 32 or
 	 (current >= 34 and current <= 38) or
 	 (current >= 58 and current <= 61) or
@@ -60,10 +54,10 @@ namespace CGI {
 	 toBeReplaced.count(current)) {
 	  char *tmp = new char[4]; // %XX + NUL
 	  std::sprintf(tmp, "%X", (int) current);
-	  src.replace(i, 1, tmp);
+	  source.replace(i, 1, tmp);
 	  delete [] tmp;
       }
     }
-    return src;
+    return source;
   }
 }

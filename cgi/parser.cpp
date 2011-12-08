@@ -1,10 +1,5 @@
 #include <cgi/cgi.hpp>
 
-/*
- * This namespace CGI as said in cgi.hpp contains all CGI-related functions and classes
- * Complying to the respective RFCs
- */
-
 namespace CGI {
 
   /*
@@ -16,7 +11,7 @@ namespace CGI {
    * because it should be inlined, it conatins just one function call to setQstr()
    */
 
-  void Parser::_sanitize(std::string& s, size_t n = 1) {
+  void Parser::_sanitize(std::string& s, size_t n) {
     size_t i;
     for (i = n; i < s.size(); i++) {
       if (s.at(i) == '&' || s.at(i) == '=' || s.at(i) == ';') {

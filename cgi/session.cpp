@@ -5,10 +5,10 @@ namespace CGI {
 
   Session::Session() {
     uuid_t uu;
-    char sid[16];
+    char _id[16];
     uuid_generate(uu);
-    uuid_unparse(uu, sid);
-    id = sid;
+    uuid_unparse(uu, _id);
+    id = _id;
 
     // We need to set the default expire time as per the settings in configuration file
     // For now, it's one hour (hardcoded).
@@ -16,13 +16,13 @@ namespace CGI {
     setExpireTime(std::time(NULL) + (time_t) 3600);
    }
 
-  Session::Session(const std::string &sid) {
+  Session::Session(const std::string _id) {
 
     // To be implemented, first storage system has to be setup [DB]
 
   }
 
-  Session* Session::getInstance(std::string sid) {
+  Session* Session::getInstance(std::string _id) {
 
     /*
      * This statement might be a bit confusing
@@ -34,13 +34,13 @@ namespace CGI {
 
     if(!ptr)
       ptr = new Session;
-    if(!ptr and sid.size())
-      ptr = new Session(sid);
+    if(!ptr and _id.size())
+      ptr = new Session(_id);
 
     return ptr;
   }
 
-  Dict_ptr_t Session::getAll() {
+  Dict_ptr_t Session::getData() {
     Dict_ptr_t ret (new Dict_t);
     *ret = data;
     return ret;

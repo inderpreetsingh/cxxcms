@@ -6,30 +6,44 @@
 #include <memory>
 #include <typeinfo>
 
-/*
- * The global header file
- * This will contain mostly typedefs and global functions, which don't fit in any kind of module or namespace
- */
+/*! \file global.hpp
+  \brief The global header file.
 
+  This contains mostly typedefs, etc. and code which do not fit in any module or namespace.
+*/
 
-/*
- * Define the Dict and Tuple data types
- * Dict is a std::map<string, string> (two column)
- * Tuple is one single element of the map using std::pair<string, string>
- */
+/*! \brief Defines dictionary type Dict_t
+
+  Define the dictionary type using std::map. The key and value are of type std::string.
+  const std::string cannot be used because we need modification access (using the element access operator).
+*/
 
 typedef std::map<std::string, std::string> Dict_t;
+
+//! Defines a single element type Tuple_t of the dictionary type Dict_t.
+
 typedef std::pair<std::string, std::string> Tuple_t;
+
+/*! \brief Defines a smart pointer type Dict_ptr_t to dictionary type Dict_t.
+  
+  Usage of smart pointers simplifies the program, because we do not need to take care of garbage collection.
+  std::auto_ptr is deprecated in C++11, hence std::unique_ptr is used.
+*/
+
 typedef std::unique_ptr <Dict_t> Dict_ptr_t;
 
-/*
- * Function returns true if the given type is some form of string
- * C-style strings, const strings, etc, etc
- */
+/*! \brief Templated Function to check if a given type is some form of string.
+
+  This function can be used to check if a given type s is some form of string.
+  It has not been tested properly and will be removed if it is buggy or not required.
+
+  \tparam s is of any type T
+  \return bool(true) if s is std::string, std::string&, std::string*, const std::string, const std::string&, const std::string*, char*, const char*;
+  otherwise bool(false).
+*/
 
 template <typename T>
-bool is_string(T s) {    
-
+bool is_string(T s) {
   std::string tn[] = {
     typeid(std::string).name(),
     typeid(std::string&).name(),
@@ -49,5 +63,4 @@ bool is_string(T s) {
       return true;
   return false;
 }
-
 #endif

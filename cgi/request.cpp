@@ -7,22 +7,17 @@ namespace CGI {
 
   Request::Request(char **envp, FILE* in) {
 
-    env.reset(new Dict_t);
-    cookie.reset(new Dict_t);
-    
-    /*
-     * Parse **env into dict_t env (private variable)
-     */
+    //Parse **env into dict_t env (private variable)
 
     while(*envp) {
       std::string tmp = *envp;
       size_t delimiter = tmp.find('=');
-      env->insert(Tuple_t(tmp.substr(0, delimiter), tmp.substr(delimiter + 1)));
+      env.insert(Tuple_t(tmp.substr(0, delimiter), tmp.substr(delimiter + 1)));
       envp++;
     }
 
     if(getEnv("QUERY_STRING").size())
-      get = Parser(getEnv("QUERY_STRING")).parse(); // Parse the input query string into dict.      
+      get = *(Parser(getEnv("QUERY_STRING")).parse()); // Parse the input query string into dict.      
 
     std::string reqmethod = getEnv("REQUEST_METHOD");
     std::transform(reqmethod.begin(), reqmethod.end(), reqmethod.begin(), (int (*)(int)) std::toupper); // Convert to uppercase
@@ -48,7 +43,7 @@ namespace CGI {
       char *buf = new char[length + 1];
       std::memset(buf, 0, length + 1);
       std::fread(buf, 1, length, in);
-      post = CGI::Parser(buf).parse();
+      post = *(CGI::Parser(buf).parse());
       delete [] buf;
     }
 
@@ -73,13 +68,13 @@ namespace CGI {
 	key = extract;
 	value = "";
       }
-      cookie->insert(Tuple_t(key, value));
+      cookie.insert(Tuple_t(key, value));
     }
   }
 
   std::string Request::getEnv(std::string name) {
     Dict_t::iterator i;
-    if((i = env->find(name)) != env->end())
+    if((i = env.find(name)) != env.end())
       return i->second;
     /*
      * We have return statement above. If code has come here, it means none was found, so we throw exception.
@@ -87,47 +82,39 @@ namespace CGI {
     throw Common::Exception("Environment variable " + name + "not found", E_ENV_NOT_FOUND, __LINE__, __FILE__);
   }
 
-  // option below, is an optional parameter. See request.hpp
-
-  Dict_ptr_t Request::getData(unsigned short option) {
-    Dict_ptr_t ret (new Dict_t);
+  Dict_ptr_t Request::getData(unsigned option) {
     Dict_t::iterator i;
-
+    Dict_ptr_t ret (new Dict_t);
     if(option & OPT_GET)
-      for(i = get->begin(); i != get->end(); i++)
+      for(i = get.begin(); i != get.end(); i++)
 	ret->insert(*i);
     if(option & OPT_POST)
-      for(i = post->begin(); i != post->end(); i++)
+      for(i = post.begin(); i != post.end(); i++)
 	ret->insert(*i);
     if(option & OPT_ENV)
-      for(i = env->begin(); i != env->end(); i++)
+      for(i = env.begin(); i != env.end(); i++)
 	ret->insert(*i);
     if(option & OPT_COOKIE)
-      for(i = cookie->begin(); i != cookie->end(); i++)
+      for(i = cookie.begin(); i != cookie.end(); i++)
 	ret->insert(*i);
     return ret;
   }
 
   // option below is an optional parameter. See request.hpp
 
-  std::string Request::getParam(std::string name, unsigned short option) {
+  std::string Request::getParam(std::string name, unsigned option) {
 
     // Order preference - GPC. For environment variables, use getEnv()
 
     Dict_t::iterator i;
 
-    if(option & OPT_GET)
-      if((i = get->find(name)) != get->end())
-	return i->second;
-    if(option & OPT_POST)
-      if((i = post->find(name)) != post->end())
-	return i->second;
-    if(option & OPT_COOKIE)
-      if((i = cookie->find(name)) != cookie->end())
-	return i->second;
-    /*
-     * We have return statements above. If code has come here, it means none was found, so we throw exception.
-     */
+    if((option & OPT_GET) and ((i = get.find(name)) != get.end()))
+      return i->second;
+    if((option & OPT_POST) and ((i = post.find(name)) != post.end()))
+      return i->second;
+    if((option & OPT_COOKIE) and ((i = cookie.find(name)) != cookie.end()))
+      return i->second;
+    
     throw Common::Exception("Request parameter " + name + " not found in GET, POST and COOKIE data", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
   }
 }
