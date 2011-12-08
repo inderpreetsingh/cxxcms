@@ -22,7 +22,7 @@ namespace CGI {
     E_QS_NOT_SET, //!< Query string not set. \sa Parser::getQstr
     E_INVALID_HEX_SYMBOL, //!< Invalid hexadecimal symbol. \sa #decodeHex
     E_ENV_NOT_FOUND, //!< Environment variable not found. \sa Request::getEnv
-    E_PARAM_NOT_FOUND, //!< Parameter not found. \sa Request::getParam
+    E_PARAM_NOT_FOUND, //!< Parameter not found. \sa Request::getParam Session::operator[]
     E_INVALID_FILE_PTR, //!< Invalid file pointer. \sa Request::Request
     E_INVALID_CONTENT_LENGTH, //!< Invalid content length. \sa Request::Request
   };
@@ -123,7 +123,7 @@ namespace CGI {
     to the application. The methods in this class can be used to read data present in those.
 
     \coder{Nilesh G,nileshgr}
-    \todo Add CGI::Session support
+    \todo Separate cookie into a separate class like session if possible
   */
 
   class Request {
@@ -133,6 +133,8 @@ namespace CGI {
     Dict_t post; //!< Dictionary to hold HTTP POST data
     Dict_t cookie; //!< Dictionary to hold cookie data
 
+    class Session *session; //!< Session class pointer. `class` is required because it is declared below & not an existing entity here.
+    
   public:
 
     /*! \brief Options for which dictionary should be used
@@ -145,7 +147,8 @@ namespace CGI {
       OPT_GET, //!< Use only HTTP GET data present in #get
       OPT_POST, //!< Use only HTTP POST data present in #post
       OPT_COOKIE, //!< Use only cookie data present in #cookie
-      OPT_ENV //!< Use only environment variables data present in #env
+      OPT_SESSION, //!< USe only session data available from CGI::Session
+      OPT_ENV, //!< Use only environment variables data present in #env
     };
 
     /*! \brief Constructor
@@ -166,7 +169,7 @@ namespace CGI {
 
     /*! \brief Returns all data or combination of requested data
 
-      All the requested data is contained in the class variables, #get, #post, #env and #cookie \n
+      All the requested data is contained in the class variables, #get, #post, #env and #cookie or data available from CGI::Session \n
       This function will return the requested one (#Dict_ptr_t) or if multiple ones are specified (bitwise operators)
       then the returned #Dict_t will contain combination of those.
 
@@ -174,19 +177,19 @@ namespace CGI {
       \return #Dict_ptr_t for a #Dict_t containing the requested data      
      */
 
-    Dict_ptr_t getData(unsigned option = OPT_GET | OPT_POST | OPT_COOKIE | OPT_ENV);
+    Dict_ptr_t getData(unsigned option = OPT_GET | OPT_POST | OPT_COOKIE | OPT_SESSION | OPT_ENV);
 
     /*! \brief Returns value of single request parameter
 
-       The default order for searching dictionaries is GPC - Get, Post and Cookie. For environment variables, use #getEnv
+       The default order for searching dictionaries is GPCS - Get, Post, Cookie and %Session. For environment variables, use #getEnv
 
        \param[in] name Name of the request parameter
-       \param[in] option Dictionaries to search for. Defaults to all three of them (GPC). \sa #option_t
+       \param[in] option Dictionaries to search for. Defaults to all three of them (GPCS). \sa #option_t
        \return Value of the request parameter
        \throw Common::Exception if requested parameter is not found in the dictionary(s).
      */
 
-    std::string getParam(std::string name, unsigned option = OPT_GET | OPT_POST | OPT_COOKIE);
+    std::string getParam(std::string name, unsigned option = OPT_GET | OPT_POST | OPT_COOKIE | OPT_SESSION);
 
   };
 
@@ -198,8 +201,7 @@ namespace CGI {
     \remark This class implements singleton design pattern. Hence constructors are private.
     \sa getInstance destroyInstance
     \note Module is not complete
-    \todo Complete the module by using cookies, and database.\n
-    Add support in CGI::Request.\n
+    \todo Complete the module using database as storage.\n
     %Session destruction should be written to storage.
     \coder{Nilesh G,nileshgr}
   */
@@ -274,12 +276,7 @@ namespace CGI {
       return *this;
     }
 
-    /*! \brief Method to retrive value corresponding to key
-      \param key Key of the value required
-      \return std::string value from #data
-      \remark std::map will throw std::exception if key is not found
-      \todo Handle exceptions from std::map and throw Common::Exception instead
-    */
+    //! \sa #operator[]
           
     std::string getData(const std::string key) {
       return data[key];
@@ -319,9 +316,12 @@ namespace CGI {
 
       \param key Key of the value required/to be set
       \return std::string& from #data
+      \throw Common::Exception if key is not found in #data
      */
     
     std::string& operator[] (const std::string key) {
+      if(data.find(key) == data.end())
+	throw Common::Exception("Session parameter `" + key + "` not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
       return data[key];
     }
   };

@@ -5,7 +5,7 @@
 
 namespace CGI {
 
-  Request::Request(char **envp, FILE* in) {
+  Request::Request(char **envp, FILE* in) {    
 
     //Parse **env into dict_t env (private variable)
 
@@ -69,6 +69,17 @@ namespace CGI {
 	value = "";
       }
       cookie.insert(Tuple_t(key, value));
+    }
+    //! \todo Use session cookie name from configuration file
+    try {
+      std::string sid = getParam("sess_id", OPT_COOKIE);
+      session = Session::getInstance(sid);
+    }
+    catch(Common::Exception e) {
+      if(e == E_PARAM_NOT_FOUND)
+	session = Session::getInstance();
+      else
+	throw e;
     }
   }
 

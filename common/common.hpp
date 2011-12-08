@@ -16,7 +16,8 @@ namespace Common {
    */
 
   enum {
-    E_CONFIG_LOAD //!< Error while loading configuration file
+    E_CONFIG_LOAD, //!< Error while loading configuration file
+    E_CONFIG_PARAM_NOT_FOUND, //!< Configuration parameter not found \sa Config::operator[]
   };
 
 
@@ -128,6 +129,7 @@ namespace Common {
 
       \param[in] filename Path to the XML file containing configuration
      */
+    
     Config(std::string filename);
 
     /*! \brief Element access to parsed \<keys,values\> stored in #data
@@ -136,18 +138,16 @@ namespace Common {
 
       \param[in] key Element name (xml) or key name in the configuration
       \return Value of the respective key in #data
-
-      \remark std::map will throw std::exception when key is not present in the map
-      \todo Handle exceptions from std::map
+      \throw Common::Exception if key is not found in #data
     */
     
     const std::string operator[](std::string key) {
+      if(data.find(key) == data.end())
+	throw Common::Exception("Configuration parameter " + key + " not found", E_CONFIG_PARAM_NOT_FOUND, __LINE__, __FILE__);
       return data[key];
     }
 
-    /*! \brief Element access to parsed \<keys,values> stored in #data via class-method      
-      \sa #operator[]
-    */
+    //! \sa #operator[]
     
     const std::string getParam(std::string key) {
       return data[key];
