@@ -47,36 +47,15 @@ namespace CGI {
       delete [] buf;
     }
 
-    std::string cookies = getEnv("HTTP_COOKIE");
+    Cookie(getEnv("HTTP_COOKIE"));
 
-    while(cookies.size()) {
-      size_t delimiter = std::string::npos;
-      std::string key = "", value = "", extract = "";
-      if((delimiter = cookies.find(';')) != std::string::npos) {
-	extract = cookies.substr(0, delimiter);
-	cookies.erase(0, delimiter + 2); // +2 because we have a space between multiple cookies. NAME1=VALUE1; NAME2=VALUE2; NAME3=VALUE3
-      }
-      else {
-	extract = cookies;
-	cookies.clear();
-      }
-      if((delimiter = extract.find('=')) != std::string::npos) {
-	key = extract.substr(0, delimiter);
-	value = extract.substr(delimiter + 1);
-      }
-      else {
-	key = extract;
-	value = "";
-      }
-      cookie.insert(Tuple_t(key, value));
-    }
     //! \todo Use session cookie name from configuration file
     try {
-      std::string sid = getParam("sess_id", OPT_COOKIE);
+      std::string sid = getCookie("sess_id");
       session = Session::getInstance(sid);
     }
     catch(Common::Exception e) {
-      if(e == E_PARAM_NOT_FOUND)
+      if(e == E_COOKIE_NOT_FOUND)
 	session = Session::getInstance();
       else
 	throw e;
@@ -105,9 +84,6 @@ namespace CGI {
     if(option & OPT_ENV)
       for(i = env.begin(); i != env.end(); i++)
 	ret->insert(*i);
-    if(option & OPT_COOKIE)
-      for(i = cookie.begin(); i != cookie.end(); i++)
-	ret->insert(*i);
     return ret;
   }
 
@@ -115,15 +91,13 @@ namespace CGI {
 
   std::string Request::getParam(std::string name, unsigned option) {
 
-    // Order preference - GPC. For environment variables, use getEnv()
+    // Order preference - GP. For environment variables, use getEnv() for cookies use inherited method getCookie()
 
     Dict_t::iterator i;
 
     if((option & OPT_GET) and ((i = get.find(name)) != get.end()))
       return i->second;
     if((option & OPT_POST) and ((i = post.find(name)) != post.end()))
-      return i->second;
-    if((option & OPT_COOKIE) and ((i = cookie.find(name)) != cookie.end()))
       return i->second;
     
     throw Common::Exception("Request parameter " + name + " not found in GET, POST and COOKIE data", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
