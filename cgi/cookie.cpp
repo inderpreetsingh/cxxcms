@@ -8,7 +8,7 @@ namespace CGI {
     return ret;
   }
 
-  Cookie::Cookie(std::string _cookies) {
+  Cookie::Cookie(std::string _cookies) : response (false) {
     while(_cookies.size()) {
       size_t delimiter = std::string::npos;
       std::string key = "", value = "", extract = "";

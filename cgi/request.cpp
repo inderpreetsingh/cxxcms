@@ -12,7 +12,7 @@ namespace CGI {
     while(*envp) {
       std::string tmp = *envp;
       size_t delimiter = tmp.find('=');
-      env.insert(Tuple_t(tmp.substr(0, delimiter), tmp.substr(delimiter + 1)));
+      env[tmp.substr(0, delimiter)] = tmp.substr(delimiter + 1);
       envp++;
     }
 
@@ -37,7 +37,7 @@ namespace CGI {
       size_t length = 0;
       std::sscanf(getEnv("CONTENT_LENGTH").c_str(), "%zu", &length); // %zu - size_t
 
-      if(!length)
+      if(not length)
 	throw Common::Exception("Invalid CONTENT_LENGTH", E_INVALID_CONTENT_LENGTH, __LINE__, __FILE__);
       
       char *buf = new char[length + 1];

@@ -138,7 +138,7 @@ namespace Common {
 
       \param[in] key Element name (xml) or key name in the configuration
       \return Value of the respective key in #data
-      \throw Common::Exception if key is not found in #data
+      \throw Common::Exception with #E_CONFIG_PARAM_NOT_FOUND if key is not found in #data
     */
     
     const std::string operator[](std::string key) {

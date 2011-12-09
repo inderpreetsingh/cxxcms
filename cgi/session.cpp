@@ -32,9 +32,9 @@ namespace CGI {
 
     static Session* ptr = NULL;
 
-    if(!ptr)
+    if(not ptr)
       ptr = new Session;
-    if(!ptr and _id.size())
+    if(not ptr and _id.size())
       ptr = new Session(_id);
 
     return ptr;

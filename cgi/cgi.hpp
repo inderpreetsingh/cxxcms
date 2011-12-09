@@ -14,10 +14,7 @@
 
 namespace CGI {
   
-  /*! \brief Error codes for CGI namespace.
-    \todo Move error codes to global.hpp (also rename if required).
-  */    
-  
+  //! Error codes for CGI namespace.  
   enum {
     E_QS_NOT_SET, //!< Query string not set. \sa Parser::getQstr
     E_INVALID_HEX_SYMBOL, //!< Invalid hexadecimal symbol. \sa #decodeHex
@@ -26,6 +23,7 @@ namespace CGI {
     E_INVALID_FILE_PTR, //!< Invalid file pointer. \sa Request::Request
     E_INVALID_CONTENT_LENGTH, //!< Invalid content length. \sa Request::Request
     E_COOKIE_NOT_FOUND, //!< Cookie not found. \sa Cookie::getCookie Cookie::operator[]
+    E_COOKIE_ALREADY_PRESENT, //!< Cookie already present. \sa Cookie::operator[]
   };
 
   /*! \brief Hex decoder
@@ -101,7 +99,7 @@ namespace CGI {
     }
 
     /*! \return Query string in const char* form
-      \throw Common::Exception if #source is empty
+      \throw Common::Exception with #E_QS_NOT_SET if #source is empty
      */
 
     const char* getQstr() const {
@@ -141,7 +139,7 @@ namespace CGI {
     Session();
 
     /*! \brief Constructor for loading existing session present in storage
-      \param _id Session ID to be loaded
+      \param[in] _id Session ID to be loaded
       \todo Throw Common::Exception if session is not found
     */
     
@@ -159,7 +157,7 @@ namespace CGI {
       If the pointer is NULL, a new instance will be created and returned, if not NULL, the same will be returned.
 
       \sa destroyInstance
-      \param _id Session id to be loaded. Defaults to "" (empty string)
+      \param[in] _id Session id to be loaded. Defaults to "" (empty string)
       \return Pointer to Session object
      */
 
@@ -168,7 +166,7 @@ namespace CGI {
     /*! \brief Method to destroy Session object
 
       \remark MUST be called when the object's use is over, otherwise it might lead to memory leaks.
-      \param ptr Pointer to Session object obtained from #getInstance
+      \param[in] ptr Pointer to Session object obtained from #getInstance
      */
 
     static void destroyInstance(Session* ptr) {
@@ -211,7 +209,7 @@ namespace CGI {
 
     /*! \brief Load session #data from an existing dictionary
       \remark Method might be removed after everything is glued properly and is not used.
-      \param _data Reference to #Dict_t from where data is to be loaded
+      \param[in] _data Reference to #Dict_t from where data is to be loaded
       \return Session& for cascading operations
     */
     
@@ -223,7 +221,7 @@ namespace CGI {
     /*! \brief Set the expire time
 
       \remark time_t is defined in time.h (POSIX)
-      \param _expire Seconds since UNIX Epoch
+      \param[in] _expire Seconds since UNIX Epoch
       \return Session& for cascading operations
      */
     
@@ -242,9 +240,9 @@ namespace CGI {
 
       Can be used to retrieve or set pairs
 
-      \param key Key of the value required/to be set
+      \param[in] key Key of the value required/to be set
       \return std::string& from #data
-      \throw Common::Exception if key is not found in #data
+      \throw Common::Exception with #E_PARAM_NOT_FOUND if key is not found in #data
      */
     
     std::string& operator[] (const std::string key) {
@@ -265,30 +263,45 @@ namespace CGI {
   class Cookie {
   private:
     Dict_t cookies; //!< Dictionary to store cookies
+    bool response; //!< Type of jar - will be true if jar is for response
     
   public:
 
-    Cookie() = default; //!< Default constructor provided only for inheritance.
+    /*! \brief Constructor - Cookie Jar for response
+
+      This cookie jar can be used for two purposes- for request data (means CGI::Request will use it)
+      and for request data (means CGI::Response and others will use it).
+
+      \param[in] _response If jar is for response, insertion/modification functions will be allowed \n
+      otherwise it will not be allowed. Defaults to true (response).
+    */
+
+    Cookie(bool _response = true) : response (_response) {}
 
     /*! \brief Constructor- cookie parser
 
       The constructor parses the string into #cookies
 
-      \param _cookies string containing cookies.\n
+      \param[in] _cookies string containing cookies.\n
       Format: NAME1=VALUE1; NAME2=VALUE2; (see RFC 3875)
+      \remark This sets #response to false \sa Cookie(bool)
     */
     
     Cookie(std::string _cookies);
 
     /*! \brief Operator overloading for simple access to #cookies
-      \throw Common::Exception if named cookie is not found in #cookies
-      \param name Name of the cookie
+      \param[in] name Name of the cookie
+      \throw Common::Exception with #E_COOKIE_NOT_FOUND if named cookie is not found in #cookies and #response is false
+      \throw Common::Exception with #E_COOKIE_ALREADY_PRESENT if named cookie is found in #cookies and #response is true
       \return std::string& to cookie's value
     */
 
     std::string& operator[](const std::string name) {
-      if(cookies.find(name) == cookies.end())
+      bool found = cookies.find(name) == cookies.end();
+      if(not response and found) // If response is false then check if cookie is found
 	throw Common::Exception("Cookie with name: " + name + " was not found in the dictionary", E_COOKIE_NOT_FOUND, __LINE__, __FILE__);
+      else if(response and not found) // If response is true then check if cookie is already present
+	throw Common::Exception("Cookie with name: " + name + " is already present in the jar", E_COOKIE_ALREADY_PRESENT, __LINE__, __FILE__);
       return cookies[name];
     }
 
@@ -298,6 +311,20 @@ namespace CGI {
 
     std::string getCookie(const std::string name) {
       return cookies[name];
+    }
+
+    /*! \brief Sets a cookie
+
+      This cookie jar can be used for both input & output. If Cookie::Cookie(bool) is used, then the class lets one modify contents
+      else it doesn't. The class can be made to act for input only 
+      
+      \sa operator[]
+      \param[in] name string containing name of cookie
+      \param[in] value string containing value of cookie
+    */
+
+    void setCookie(const std::string name, const std::string value) {
+      cookies[name] = value;
     }
 
     /*! \brief Returns all cookies
@@ -342,7 +369,8 @@ namespace CGI {
     /*! \brief Constructor
       \param[in] env Array of C-style strings for environment variables
       \param[in] in Pointer to FILE*, defaults to stdin
-      \throw Common::Exception if CONTENT_LENGTH = 0 or in = NULL
+      \throw Common::Exception with #E_INVALID_FILE_PTR if in = NULL
+      \throw Common::Exception with #E_INVALID_CONTENT_LENGTH if CONTENT_LENGTH = 0
      */
 
     Request(char** env, FILE* in = stdin);
@@ -350,7 +378,7 @@ namespace CGI {
     /*! \brief Returns value of environment variable from #env
       \param[in] name Name of environment variable
       \return Value of environment variable
-      \throw Common::Exception if the request variable is not found in #env
+      \throw Common::Exception with #E_PARAM_NOT_FOUND if the request variable is not found in #env
     */
     
     std::string getEnv(std::string name);
@@ -376,7 +404,7 @@ namespace CGI {
        \param[in] name Name of the request parameter
        \param[in] option Dictionaries to search for. Defaults to all three of them (GPCS). \sa #option_t
        \return Value of the request parameter
-       \throw Common::Exception if requested parameter is not found in the dictionary(s).
+       \throw Common::Exception with #E_PARAM_NOT_FOUND if requested parameter is not found in the specified dictionaries.
      */
 
     std::string getParam(std::string name, unsigned option = OPT_GET | OPT_POST | OPT_SESSION);
