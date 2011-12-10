@@ -19,14 +19,14 @@ namespace Common {
   };
 
 
-  /*! \brief Exception class
+  /*! \brief Global %Exception class
 
     An instance of this class will be thrown whenever an exception/error occurs in the program code. This does not apply to
     exceptions thrown by STL.
     -Converting/casting this class to const char* will return the message
     -Converting/casting this class to int will return the code
     
-   Exception class won't be used very frequently, in the sense, it will be thrown only in case of error,
+   %Exception class won't be used very frequently, in the sense, it will be thrown only in case of error,
    and errors obviously must occur rarely. Hence, functions of this class aren't inlined to keep the binary size small
    in case the compiler inlines the code after requesition by the inline statement (or definition in the class itself).
 
