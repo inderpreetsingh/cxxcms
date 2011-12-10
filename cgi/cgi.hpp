@@ -326,7 +326,7 @@ namespace CGI {
     Dict_t post; //!< Dictionary to hold HTTP POST data
     bool rawpostdata; //!< Variable to check if the POST data received was ASCII or binary (file upload)
     char *postBuffer; //!< If rawpostdata is true, then we cannot use post to store data, we need to use buffer
-    char *postBuffer_fncall; //!< Pointer to the memory created by getBinPost, so that it can be deleted[]d on class destruction
+    char *postBuffer_fncall; //!< Pointer to the memory created and returned by #getBinPost, so that it can be deleted[]d on class destruction
     
   public:
 
@@ -346,7 +346,6 @@ namespace CGI {
 
     /*! \brief Constructor
       \param[in] env Array of C-style strings for environment variables
-      \throw Common::Exception with #E_INVALID_FILE_PTR if in = NULL
       \throw Common::Exception with #E_INVALID_CONTENT_LENGTH if request mode is #POST and CONTENT_LENGTH = 0
      */
 
@@ -359,7 +358,7 @@ namespace CGI {
       then the returned #Dict_t will contain combination of those.
 
       \param[in] option The dictionary which should be returned. Defaults to all values bitwise-or'd \sa #option_t
-      \throw Common::Exception with #E_POST_BINARY if option has #POST and #rawpostdata is true.
+      \throw Common::Exception with #E_POST_BINARY if option has POST and #rawpostdata is true.
       \return #Dict_ptr_t for a #Dict_t containing the requested data      
      */
 
@@ -384,12 +383,12 @@ namespace CGI {
 
       \remark Do not delete[] the pointer returned. It is take care of by ~Request
       \throw Common::Exception with #E_POST_NOT_BINARY if #rawpostdata = false
-      \return char* #postBuffer
+      \return char* #postBuffer_fncall
     */
     
     char* getBinPost();
 
-    //! \brief Destructor, to deallocate memory in #postBuffer and #postBuffer_fncall (if present)
+    //! Destructor, to deallocate memory in #postBuffer and #postBuffer_fncall (if present)
 
     ~Request();
   };    
