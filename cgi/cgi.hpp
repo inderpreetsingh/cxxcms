@@ -10,6 +10,8 @@
 
   The %Common Gateway Interface is the basic protocol by which a webserver communicates data to the application.
   The Query string, HTTP GET/POST, HTTP header, etc, data is available through the %CGI protocol (environment variables, stdin).
+
+  \todo Response module
 */
 
 namespace CGI {
@@ -25,6 +27,8 @@ namespace CGI {
     E_INVALID_CONTENT_LENGTH, //!< Invalid content length. \sa Request::Request
     E_COOKIE_REQUEST, //!< Cookie is in request mode. \sa Cookie::response
     E_SESSION_REQUEST, //!< Session is in request mode. \sa Session::response
+    E_POST_BINARY, //!< POST data is binary. \sa Request::getData Request::getParam
+    E_POST_NOT_BINARY, //!< POST data is not binary. \sa Request::getBinPost
   };
 
   /*! \brief Hex decoder
@@ -306,13 +310,12 @@ namespace CGI {
     
     virtual Dict_ptr_t getData();
   };
-  
-  /*! \brief Class to manage Request data
 
-    When a client requests a resource, the webserver feeds the parameters via environment variables and stdin (if POST)
-    to the application. The methods in this class can be used to read data present in those.
+  /*! \brief Class to manage HTTP %Request data
 
-    \todo Parse HTTP headers
+    When a client requests a resource, the webserver feeds the parameters via HTTP headers which are translated to environment variables
+    (and stdin if POST) to the application. The methods in this class can be used to read data present in those.
+
     \coder{Nilesh G,nileshgr}
   */
 
@@ -321,6 +324,9 @@ namespace CGI {
     Dict_t env; //!< Dictionary to hold environment variables
     Dict_t get; //!< Dictionary to hold HTTP GET data
     Dict_t post; //!< Dictionary to hold HTTP POST data
+    bool rawpostdata; //!< Variable to check if the POST data received was ASCII or binary (file upload)
+    char *postBuffer; //!< If rawpostdata is true, then we cannot use post to store data, we need to use buffer
+    char *postBuffer_fncall; //!< Pointer to the memory created by getBinPost, so that it can be deleted[]d on class destruction
     
   public:
 
@@ -340,12 +346,11 @@ namespace CGI {
 
     /*! \brief Constructor
       \param[in] env Array of C-style strings for environment variables
-      \param[in] in Pointer to FILE*, defaults to stdin
       \throw Common::Exception with #E_INVALID_FILE_PTR if in = NULL
-      \throw Common::Exception with #E_INVALID_CONTENT_LENGTH if CONTENT_LENGTH = 0
+      \throw Common::Exception with #E_INVALID_CONTENT_LENGTH if request mode is #POST and CONTENT_LENGTH = 0
      */
 
-    Request(char** env, FILE* in = stdin);
+    Request(char** env);
 
     /*! \brief Returns all data or combination of requested data
 
@@ -354,6 +359,7 @@ namespace CGI {
       then the returned #Dict_t will contain combination of those.
 
       \param[in] option The dictionary which should be returned. Defaults to all values bitwise-or'd \sa #option_t
+      \throw Common::Exception with #E_POST_BINARY if option has #POST and #rawpostdata is true.
       \return #Dict_ptr_t for a #Dict_t containing the requested data      
      */
 
@@ -367,10 +373,25 @@ namespace CGI {
        \param[in] option Dictionaries to search for. Defaults to all five of them (GPCSE). \sa #option_t
        \return Value of the request parameter
        \throw Common::Exception with #E_PARAM_NOT_FOUND if requested parameter is not found in the specified dictionaries.
+       \throw Common::Exception with #E_POST_BINARY if option has #POST and #rawpostdata is true
      */
 
     std::string getParam(std::string name, unsigned option = GET | POST | SESSION | COOKIE | ENV);
 
-  };
+    /*! \brief Returns post data if it is binary (file upload)
+
+      We cannot use getParam or getData if HTTP POST data is binary
+
+      \remark Do not delete[] the pointer returned. It is take care of by ~Request
+      \throw Common::Exception with #E_POST_NOT_BINARY if #rawpostdata = false
+      \return char* #postBuffer
+    */
+    
+    char* getBinPost();
+
+    //! \brief Destructor, to deallocate memory in #postBuffer and #postBuffer_fncall (if present)
+
+    ~Request();
+  };    
 }
 #endif
