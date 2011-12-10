@@ -11,9 +11,7 @@
 
 namespace Common {
 
-  /*! \brief Error codes for the common namespace
-    \todo Move error codes to global.hpp (also rename if required).
-   */
+  //! Error codes for the common namespace
 
   enum {
     E_CONFIG_LOAD, //!< Error while loading configuration file

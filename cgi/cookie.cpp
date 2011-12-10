@@ -2,7 +2,7 @@
 
 namespace CGI {
 
-  Dict_ptr_t Cookie::getCookies() {
+  Dict_ptr_t Cookie::getData() {
     Dict_ptr_t ret (new Dict_t);
     *ret = cookies;
     return ret;

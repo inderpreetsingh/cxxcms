@@ -11,7 +11,7 @@ namespace CGI {
    * because it should be inlined, it conatins just one function call to setQstr()
    */
 
-  void Parser::_sanitize(std::string& s, size_t n) {
+  void Parser::_sanitize(std::string& s, size_t n) const {
     size_t i;
     for (i = n; i < s.size(); i++) {
       if (s.at(i) == '&' or s.at(i) == '=' or s.at(i) == ';') {
@@ -30,7 +30,7 @@ namespace CGI {
       s.erase(s.size()-1,1);
   }
 
-  Dict_ptr_t Parser::parse() {    
+  Dict_ptr_t Parser::parse() const {    
     std::string copy = getQstr(), extract = "";
     _sanitize(copy);
 

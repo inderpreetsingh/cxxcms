@@ -19,11 +19,12 @@ namespace CGI {
     E_QS_NOT_SET, //!< Query string not set. \sa Parser::getQstr
     E_INVALID_HEX_SYMBOL, //!< Invalid hexadecimal symbol. \sa #decodeHex
     E_ENV_NOT_FOUND, //!< Environment variable not found. \sa Request::getEnv
-    E_PARAM_NOT_FOUND, //!< Parameter not found. \sa Request::getParam Session::operator[]
+    E_PARAM_NOT_FOUND, //!< Parameter not found. \sa Request::getParam Session::getParam Cookie::getParam
+    E_PARAM_DUPLICATE, //!< Parameter already present. \sa Session::setParam Cookie::setParam
     E_INVALID_FILE_PTR, //!< Invalid file pointer. \sa Request::Request
     E_INVALID_CONTENT_LENGTH, //!< Invalid content length. \sa Request::Request
-    E_COOKIE_NOT_FOUND, //!< Cookie not found. \sa Cookie::getCookie Cookie::operator[]
-    E_COOKIE_ALREADY_PRESENT, //!< Cookie already present. \sa Cookie::operator[]
+    E_COOKIE_REQUEST, //!< Cookie is in request mode. \sa Cookie::response
+    E_SESSION_REQUEST, //!< Session is in request mode. \sa Session::response
   };
 
   /*! \brief Hex decoder
@@ -72,7 +73,7 @@ namespace CGI {
       \coder{Ershad K,ershus}
     */
 
-    void _sanitize(std::string& s, size_t n = 1);
+    void _sanitize(std::string& s, size_t n = 1) const;
     
   public:
 
@@ -112,7 +113,7 @@ namespace CGI {
       \return #Dict_ptr_t
      */
 
-    Dict_ptr_t parse();
+    Dict_ptr_t parse() const;
     
   };
 
@@ -120,9 +121,9 @@ namespace CGI {
 
     HTTP is a stateless protocol, hence we have to handle sessions on the server side.
     We track users by using a cookie for session id and storing relevant data on server side.
-    
-    \remark This class implements singleton design pattern. Hence constructors are private.
-    \sa getInstance destroyInstance
+
+    \remark The session id, data, expire and response is common to all instances (static) and hence, over multiple instances, the methods
+    will work on the same piece of %data instead of having their own copy.
     \note Module is not complete
     \todo Complete the module using database as storage.\n
     %Session destruction should be written to storage.
@@ -130,127 +131,107 @@ namespace CGI {
   */
 
   class Session {
-  private:    
-    std::string id; //!< %Session id (identifer)
-    Dict_t data; //!< %Session data dictionary
-    time_t expire; //!< %Session expiry time
+  private:
+    static std::string id; //!< %Session identifier (id)
+    static Dict_t data; //!< %Session data dictionary
+    static time_t expire; //!< %Session expiry time
+    static bool response; //!< Variable to track if it is in response mode or request mode
+    
+  public:
 
-    //! Constructor to start/create a new session      
+    /*! \brief Constructor to start/create a new session
+
+      This class is inherited by Request, so we need to provide a default constructor.\n
+      We will assume by default response mode here and if the other constructor Session(const std::string) gets called
+      we will switch to request mode, hence prohibiting insertion/modification
+    */
+
     Session();
 
-    /*! \brief Constructor for loading existing session present in storage
+    /*! \brief Constructor for loading existing session present in storage (request mode)
       \param[in] _id Session ID to be loaded
       \todo Throw Common::Exception if session is not found
     */
     
-    Session(const std::string _id);
-
-    //! Private default copy constructor (disabling it)
-    
-    Session(const Session&) = default;
-    
-  public:
-
-    /*! \brief Method to return pointer to instance
-
-      A static variable is used inside to track session object, ensuring only one instance at a time.
-      If the pointer is NULL, a new instance will be created and returned, if not NULL, the same will be returned.
-
-      \sa destroyInstance
-      \param[in] _id Session id to be loaded. Defaults to "" (empty string)
-      \return Pointer to Session object
-     */
-
-    static Session* getInstance(const std::string _id = "");
-
-    /*! \brief Method to destroy Session object
-
-      \remark MUST be called when the object's use is over, otherwise it might lead to memory leaks.
-      \param[in] ptr Pointer to Session object obtained from #getInstance
-     */
-
-    static void destroyInstance(Session* ptr) {
-      if(ptr)
-	delete ptr;
-    }
+    Session(std::string _id);
 
     //! \return %Session ID
-    std::string getSessionId() {
-      return id;
+    const std::string getSessionId() const {
+      return Session::id;
     }
 
     /*! \brief Method to retrive everything present in #data
-
-      Returns a new dictionary, modifications won't reflect.
-
-      \remark Overloaded function
-      \sa getData(const std::string)
+      \remark Returns a new dictionary, modifications won't reflect.
+      \sa getParam(const std::string)
       \return Dict_ptr_t of a newly allocated #Dict_t containing everything from #data
     */
 
-    Dict_ptr_t getData();
+    virtual Dict_ptr_t getData() const;
 
-    /*! \brief Wrapper around #operator[] to add data
-      \return Session& for cascading operations
+    /*! \brief Method to set parameter
+
+      This is a virtual method because Response will have a wrapper.
+      
+      \throw Common::Exception with E_SESSION_REQUEST if class is in request mode
+      \throw Common::Exception with E_PARAM_DUPLICATE if session parameter is already present
+      \param[in] name Name of the session parameter
+      \param[in] value Value of the session parameter
+      \return const Session& for cascading operations
      */
     
-    Session& addData(const std::string key, const std::string value) {
-      data[key] = value;
+    virtual const Session& setParam(std::string name, std::string value) {
+      if(not response)
+	throw Common::Exception("You are not allowed to set a session parameter in a request", E_SESSION_REQUEST, __LINE__, __FILE__);
+      if(Session::data.find(name) != Session::data.end())
+	throw Common::Exception("Session parameter `" + name + "` already exists", E_PARAM_DUPLICATE, __LINE__, __FILE__);
+      Session::data[name] = value;
       return *this;
     }
 
-    /*! \remark Overloaded function
-      \sa #operator[] #getData
+    /*! Method to retrieve a parameter
+
+      This is a virtual method because Request has a wrapper.
+      
+      \param[in] name Name of the session parameter
+      \return const std::string value from #data
+      \throw Common::Exception with #E_PARAM_NOT_FOUND if key is not found in #data
     */
           
-    std::string getData(const std::string key) {
-      return data[key];
+    virtual const std::string getParam(std::string name) const {
+      if(Session::data.find(name) == Session::data.end())
+	throw Common::Exception("Session parameter `" + name + "` was not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
+      return Session::data[name];
     }
 
     /*! \brief Load session #data from an existing dictionary
       \remark Method might be removed after everything is glued properly and is not used.
       \param[in] _data Reference to #Dict_t from where data is to be loaded
-      \return Session& for cascading operations
+      \return const Session& for cascading operations
     */
     
-    Session& loadData(Dict_t& _data) {
-      data = _data;
+    const Session& loadData(const Dict_t& _data) {
+      Session::data = _data;
       return *this;
     }
 
     /*! \brief Set the expire time
 
-      \remark time_t is defined in time.h (POSIX)
+      \remark time_t is defined in time.h
       \param[in] _expire Seconds since UNIX Epoch
       \return Session& for cascading operations
      */
     
     Session& setExpireTime(time_t _expire) {
-      expire = _expire;
+      Session::expire = _expire;
       return *this;
     }
 
     //! Retrieve expire time (since UNIX Epoch)
 
-    time_t getExpireTime() {
-      return expire;
+    time_t getExpireTime() const {
+      return Session::expire;
     }
-
-    /*! \brief Operator overloading for simple access to #data
-
-      Can be used to retrieve or set pairs
-
-      \param[in] key Key of the value required/to be set
-      \return std::string& from #data
-      \throw Common::Exception with #E_PARAM_NOT_FOUND if key is not found in #data
-     */
-    
-    std::string& operator[] (const std::string key) {
-      if(data.find(key) == data.end())
-	throw Common::Exception("Session parameter `" + key + "` not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
-      return data[key];
-    }
-  };
+  };  
 
   /*! \brief Class to manage %Cookie data
 
@@ -269,14 +250,10 @@ namespace CGI {
 
     /*! \brief Constructor - Cookie Jar for response
 
-      This cookie jar can be used for two purposes- for request data (means CGI::Request will use it)
-      and for request data (means CGI::Response and others will use it).
-
-      \param[in] _response If jar is for response, insertion/modification functions will be allowed \n
-      otherwise it will not be allowed. Defaults to true (response).
+      By default we assume response mode. If Cookie::Cookie(std::string) is called, we switch to request mode.
     */
 
-    Cookie(bool _response = true) : response (_response) {}
+    Cookie() : response (true) {}
 
     /*! \brief Constructor- cookie parser
 
@@ -289,41 +266,37 @@ namespace CGI {
     
     Cookie(std::string _cookies);
 
-    /*! \brief Operator overloading for simple access to #cookies
-      \param[in] name Name of the cookie
-      \throw Common::Exception with #E_COOKIE_NOT_FOUND if named cookie is not found in #cookies and #response is false
-      \throw Common::Exception with #E_COOKIE_ALREADY_PRESENT if named cookie is found in #cookies and #response is true
-      \return std::string& to cookie's value
-    */
-
-    std::string& operator[](const std::string name) {
-      bool found = cookies.find(name) == cookies.end();
-      if(not response and found) // If response is false then check if cookie is found
-	throw Common::Exception("Cookie with name: " + name + " was not found in the dictionary", E_COOKIE_NOT_FOUND, __LINE__, __FILE__);
-      else if(response and not found) // If response is true then check if cookie is already present
-	throw Common::Exception("Cookie with name: " + name + " is already present in the jar", E_COOKIE_ALREADY_PRESENT, __LINE__, __FILE__);
-      return cookies[name];
-    }
-
     /*! \brief Returns a copy of the cookie value
-      \sa operator[]
+
+      Virtual function because Request has a wrapper
+      
+      \param[in] name Name of the cookie
+      \throw Common::Exception with #E_PARAM_NOT_FOUND if name is not found in #cookies
+      \return const std::string value of from #cookies
     */
 
-    std::string getCookie(const std::string name) {
+    virtual const std::string getParam(std::string name) {
+      if(cookies.find(name) == cookies.end())
+	throw Common::Exception("Cookie named `" + name + "` was not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
       return cookies[name];
     }
 
     /*! \brief Sets a cookie
 
-      This cookie jar can be used for both input & output. If Cookie::Cookie(bool) is used, then the class lets one modify contents
-      else it doesn't. The class can be made to act for input only 
-      
-      \sa operator[]
+      Virtual function because Response has a wrapper
+
       \param[in] name string containing name of cookie
       \param[in] value string containing value of cookie
+      \return const Cookie& for cascading operations
+      \throw Common::Exception with E_COOKIE_REQUEST if response is false
+      \throw Common::Exception with E_PARAM_DUPLICATE if cookie is already found
     */
 
-    void setCookie(const std::string name, const std::string value) {
+    virtual const Cookie& setParam(std::string name, std::string value) {
+      if(not response)
+	throw Common::Exception("You are not allowed to set a cookie in request mode", E_COOKIE_REQUEST, __LINE__, __FILE__);
+      if(cookies.find(name) != cookies.end())
+	throw Common::Exception("Cookie named `" + name + "` already exists", E_PARAM_DUPLICATE, __LINE__, __FILE__);
       cookies[name] = value;
     }
 
@@ -331,7 +304,7 @@ namespace CGI {
       \return #Dict_ptr_t of a #Dict_t which has everything from #cookies
     */
     
-    Dict_ptr_t getCookies();
+    virtual Dict_ptr_t getData();
   };
   
   /*! \brief Class to manage Request data
@@ -339,17 +312,15 @@ namespace CGI {
     When a client requests a resource, the webserver feeds the parameters via environment variables and stdin (if POST)
     to the application. The methods in this class can be used to read data present in those.
 
-    \todo Implement session processing using session-jar like cookies, using inheritance
+    \todo Parse HTTP headers
     \coder{Nilesh G,nileshgr}
   */
 
-  class Request : public Cookie {
+  class Request : public Cookie, public Session {
   private:    
     Dict_t env; //!< Dictionary to hold environment variables
     Dict_t get; //!< Dictionary to hold HTTP GET data
     Dict_t post; //!< Dictionary to hold HTTP POST data
-
-    Session *session; //!< Session class pointer.
     
   public:
 
@@ -360,10 +331,11 @@ namespace CGI {
     */
 
     enum option_t {
-      OPT_GET, //!< Use only HTTP GET data present in #get
-      OPT_POST, //!< Use only HTTP POST data present in #post
-      OPT_SESSION, //!< Use only session data available from CGI::Session
-      OPT_ENV, //!< Use only environment variables data present in #env
+      GET, //!< Use only HTTP GET data present in #get
+      POST, //!< Use only HTTP POST data present in #post
+      SESSION, //!< Use only CGI::Session
+      COOKIE, //!< Use only CGI::Cookie
+      ENV, //!< Use only environment variables data present in #env
     };
 
     /*! \brief Constructor
@@ -375,39 +347,29 @@ namespace CGI {
 
     Request(char** env, FILE* in = stdin);
 
-    /*! \brief Returns value of environment variable from #env
-      \param[in] name Name of environment variable
-      \return Value of environment variable
-      \throw Common::Exception with #E_PARAM_NOT_FOUND if the request variable is not found in #env
-    */
-    
-    std::string getEnv(std::string name);
-
     /*! \brief Returns all data or combination of requested data
 
       All the requested data is contained in the class variables, #get, #post, #env and data available from CGI::Session \n
       This function will return the requested one (#Dict_ptr_t) or if multiple ones are specified (bitwise operators)
       then the returned #Dict_t will contain combination of those.
 
-      \remark For cookie data, use inherited method #getCookies
       \param[in] option The dictionary which should be returned. Defaults to all values bitwise-or'd \sa #option_t
       \return #Dict_ptr_t for a #Dict_t containing the requested data      
      */
 
-    Dict_ptr_t getData(unsigned option = OPT_GET | OPT_POST | OPT_SESSION | OPT_ENV);
+    Dict_ptr_t getData(unsigned option = GET | POST | SESSION | COOKIE | ENV);
 
     /*! \brief Returns value of single request parameter
 
-       The default order for searching dictionaries is GPS - Get, Post and %Session.
+       The default order for searching is GPCSE - Get, Post, %Cookie, %Session and Environment variables
 
-       \remark For environment variables, use #getEnv and for cookies use inherited method #getCookie
        \param[in] name Name of the request parameter
-       \param[in] option Dictionaries to search for. Defaults to all three of them (GPCS). \sa #option_t
+       \param[in] option Dictionaries to search for. Defaults to all five of them (GPCSE). \sa #option_t
        \return Value of the request parameter
        \throw Common::Exception with #E_PARAM_NOT_FOUND if requested parameter is not found in the specified dictionaries.
      */
 
-    std::string getParam(std::string name, unsigned option = OPT_GET | OPT_POST | OPT_SESSION);
+    std::string getParam(std::string name, unsigned option = GET | POST | SESSION | COOKIE | ENV);
 
   };
 }
