@@ -1,5 +1,9 @@
 #include <cgi/cgi.hpp>
 
+/*! \file cookie.cpp
+  \brief Implementation of CGI::Cookie
+*/
+
 namespace CGI {
 
   Cookie::Cookie(std::string _cookies) : response (false) {

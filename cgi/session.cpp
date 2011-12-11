@@ -1,6 +1,10 @@
 #include <cgi/cgi.hpp>
 #include <uuid/uuid.h>
 
+/*! \file session.cpp
+  \brief Implementation of CGI::Session
+*/
+
 namespace CGI {
   /* We have static members in the class, we need to initialize them, so that the methods in the class can reference them using FQN
      This works only for static members (even for private members) */

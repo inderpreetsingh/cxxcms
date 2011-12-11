@@ -1,5 +1,9 @@
 #include <cgi/cgi.hpp>
 
+/*! \file parser.cpp
+  \brief Implementation of CGI::Parser
+*/
+
 namespace CGI {
 
   /*

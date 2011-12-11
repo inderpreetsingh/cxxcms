@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <fcgi_stdio.h>
 
+/*! \file request.cpp
+  \brief Implementation of CGI::Request
+*/
+
 namespace CGI {
 
   Request::Request(char **envp) : postBuffer(NULL), postBuffer_fncall(NULL), rawpostdata(false) {    

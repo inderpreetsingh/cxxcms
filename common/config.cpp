@@ -2,6 +2,10 @@
 #include <contrib/pugixml/pugixml.hpp>
 #include <string>
 
+/*! \file config.cpp
+  \brief Implementation of Common::Config
+*/
+
 namespace Common {
   Config::Config(std::string filename) {
     pugi::xml_document doc;

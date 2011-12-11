@@ -1,6 +1,10 @@
 #include <common/common.hpp>
 #include <sstream>
 
+/*! \file exception.cpp
+  \brief Implementation of Common::Exception
+*/
+
 namespace Common {
 
   // Refer to the header common.hpp for documentation

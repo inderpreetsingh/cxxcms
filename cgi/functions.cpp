@@ -3,6 +3,10 @@
 #include <set>
 #include <algorithm>
 
+/*! \file functions.cpp
+  \brief Implementation of functions in CGI namespace
+*/
+
 namespace CGI {
 
   int decodeHex(std::string source) {

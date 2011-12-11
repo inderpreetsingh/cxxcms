@@ -5,6 +5,12 @@
 #include <ctime>
 #include <string>
 
+/*! \file cgi.hpp
+  \brief %CGI namespace definition
+
+  File contains definition of various classes and functions for the %CGI module
+*/
+
 /*! \namespace CGI
   \brief The %CGI - %Common Gateway Interface module.
 

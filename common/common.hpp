@@ -3,6 +3,13 @@
 #include <string>
 #include <global.hpp>
 
+/*! \file common.hpp
+  \brief %Common utilities
+
+  File contains declaration for various classes and functions commonly used. Template functions
+  and small class methods are implemented inline
+*/
+
 /*! \namespace Common
   \brief %Common functions/classes
 
