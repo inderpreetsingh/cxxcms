@@ -550,7 +550,7 @@ namespace CGI {
       \return const char*
     */
 
-    char* getBinaryBody() {
+    const char* getBinaryBody() {
       return binaryData.get();
     }      
   };
