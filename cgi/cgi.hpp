@@ -4,6 +4,7 @@
 #include <common/common.hpp>
 #include <ctime>
 #include <string>
+#include <memory>
 
 /*! \file cgi.hpp
   \brief %CGI namespace definition
@@ -270,10 +271,10 @@ namespace CGI {
     typedef std::map<std::string, cookie_t> cookie_dict_t; //!< Type definition for cookie dictionary
     typedef std::pair<std::string, cookie_t> cookie_tuple_t; //!< Type definition for cookie pair
   private:
-    cookie_dict_t cookies; //!< Dictionary to store cookies, consisting of name & #cookie_t
+    cookie_dict_t cookies; //!< Dictionary to store cookies, consisting of name & cookie_t
     /*! \brief Type of jar - will be true if jar is for response
 
-      If jar is in request mode, then only value will be used in #cookie_t.
+      If jar is in request mode, then only value will be used in cookie_t.
     */
     bool response; 
     
@@ -297,10 +298,10 @@ namespace CGI {
     
     Cookie(std::string _cookies);
 
-    /*! \brief Returns a copy of #cookie_t      
+    /*! \brief Returns a copy of cookie_t
       \param[in] name Name of the cookie
       \throw Common::Exception with #E_PARAM_NOT_FOUND if name is not found in #cookies
-      \return #cookie_t copy present in #cookies
+      \return cookie_t copy present in #cookies
     */
 
     cookie_t getCookie(std::string name) {
@@ -312,7 +313,7 @@ namespace CGI {
 
     /*! \brief Sets a cookie
       \param[in] name string containing name of cookie
-      \param[in] data #cookie_t containing value and other parameters
+      \param[in] data cookie_t containing value and other parameters
       \return Cookie& for cascading operations
       \throw Common::Exception with E_COOKIE_REQUEST if response is false
     */
@@ -429,6 +430,15 @@ namespace CGI {
     Dict_t headers; //!< Headers are sent before body and even Cookie is present in HTTP header.
     std::string completeBody; //!< The complete response body (includes headers)
     std::string contentBody; //!< Content body (response body excluding headers)
+    /*! \brief Binary mode
+
+      Binary mode should be used when we need to emit binary files, for instance generate image and emit it
+      #binary is used to know if we should use binary mode or not
+      \sa #binaryData
+    */
+    bool binary;
+    std::unique_ptr<char[]> binaryData; //!< Holds pointer to binary data
+    size_t binaryLength; //!< Holds length of binary data
 
   public:
 
@@ -491,12 +501,13 @@ namespace CGI {
       contentBody += data;
     }
 
-    /*! \brief Clears #contentBody
+    /*! \brief Clears #contentBody and #completeBody
       \return Response& for cascading operations
     */
 
     Response& clearBody() {
       contentBody.clear();
+      completeBody.clear();
     }
 
     /*! \brief Returns content body
@@ -518,6 +529,30 @@ namespace CGI {
     */
 
     std::string& getCompleteBody();
-  };    
+
+    /*! \brief Add binary body
+      \remark
+      -# If this is used, content added via #addBody or #appendBody will be discarded
+      -# Sets #binary to true
+      \param _binaryData std::unique_ptr holding pointer to block of data
+      \param _binaryLength Length/size of data (bytes)
+      \return Response& for cascading operations
+    */
+    
+    Response& setBinaryBody(std::unique_ptr<char[]> _binaryData, size_t _binaryLength) {
+      binary = true;
+      binaryData = std::move(_binaryData);
+      binaryLength = _binaryLength;
+    }
+
+    /*! \brief Returns binary body
+      \remark Do <b>NOT</b> call delete[] on the pointer obtained. It is taken care of at class destruction by unique_ptr.
+      \return const char*
+    */
+
+    char* getBinaryBody() {
+      return binaryData.get();
+    }      
+  };
 }
 #endif
