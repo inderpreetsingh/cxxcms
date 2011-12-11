@@ -2,12 +2,6 @@
 
 namespace CGI {
 
-  Dict_ptr_t Cookie::getData() {
-    Dict_ptr_t ret (new Dict_t);
-    *ret = cookies;
-    return ret;
-  }
-
   Cookie::Cookie(std::string _cookies) : response (false) {
     while(_cookies.size()) {
       size_t delimiter = std::string::npos;
@@ -28,7 +22,9 @@ namespace CGI {
 	key = extract;
 	value = "";
       }
-      cookies[key] = value;
+      cookie_t tmp;
+      tmp.value = value;
+      cookies.insert(cookie_tuple_t(key, tmp));
     }
   }
 }

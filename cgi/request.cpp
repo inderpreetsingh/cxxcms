@@ -49,12 +49,11 @@ namespace CGI {
 	  post = *(CGI::Parser(buf).parse());
       }
     }
-
-    Cookie(getParam("HTTP_COOKIE", ENV));
     
     //! \todo Use session cookie name from configuration file
     try {
-      Session(getParam("sess_id", COOKIE));
+      Cookie(getParam("HTTP_COOKIE", ENV));
+      Session(getCookie("sess_id").value);
     }
     catch(Common::Exception e) {
       if(e != E_PARAM_NOT_FOUND)
@@ -73,12 +72,7 @@ namespace CGI {
 	throw Common::Exception("Error: POST data is binary, use getbinPost()", E_POST_BINARY, __LINE__, __FILE__);
       for(i = post.begin(); i != post.end(); i++)
 	ret->insert(*i);
-    }
-    if(option & COOKIE) {
-      Dict_ptr_t ck = Cookie::getData();
-      for(i = ck->begin(); i != ck->end(); i++)
-	ret->insert(*i);
-    }
+    }    
     if(option & SESSION) {
       Dict_ptr_t ss = Session::getData();
       for(i = ss->begin(); i != ss->end(); i++)
@@ -94,10 +88,9 @@ namespace CGI {
 
   std::string Request::getParam(std::string name, unsigned option) {
 
-    // Order preference - GPCSE.
+    // Order preference - GPSE.
     
-    Dict_t::iterator i;
-    
+    Dict_t::iterator i;    
     if((option & GET) and ((i = get.find(name)) != get.end()))
       return i->second;
     if(option & POST) {
@@ -105,15 +98,12 @@ namespace CGI {
 	throw Common::Exception("Error: POST data is binary", E_POST_BINARY, __LINE__, __FILE__);
       return i->second;
     }
-    if(option & COOKIE)
-      return Cookie::getParam(name);
     if(option & SESSION)
       return Session::getParam(name);
     if((option & ENV) and ((i = env.find(name)) != env.end()))
-      return i->second;
-    
+      return i->second;    
     throw Common::Exception("Request parameter " + name + " not found in GET, POST data and environment variables", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
-    }
+  }
 
   Request::~Request() {
     if(postBuffer)

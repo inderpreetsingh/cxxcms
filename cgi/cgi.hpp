@@ -22,7 +22,6 @@ namespace CGI {
     E_INVALID_HEX_SYMBOL, //!< Invalid hexadecimal symbol. \sa #decodeHex
     E_ENV_NOT_FOUND, //!< Environment variable not found. \sa Request::getEnv
     E_PARAM_NOT_FOUND, //!< Parameter not found. \sa Request::getParam Session::getParam Cookie::getParam
-    E_PARAM_DUPLICATE, //!< Parameter already present. \sa Session::setParam Cookie::setParam
     E_INVALID_FILE_PTR, //!< Invalid file pointer. \sa Request::Request
     E_INVALID_CONTENT_LENGTH, //!< Invalid content length. \sa Request::Request
     E_COOKIE_REQUEST, //!< Cookie is in request mode. \sa Cookie::response
@@ -177,7 +176,6 @@ namespace CGI {
       This is a virtual method because Response will have a wrapper.
       
       \throw Common::Exception with E_SESSION_REQUEST if class is in request mode
-      \throw Common::Exception with E_PARAM_DUPLICATE if session parameter is already present
       \param[in] name Name of the session parameter
       \param[in] value Value of the session parameter
       \return const Session& for cascading operations
@@ -186,8 +184,6 @@ namespace CGI {
     virtual const Session& setParam(std::string name, std::string value) {
       if(not response)
 	throw Common::Exception("You are not allowed to set a session parameter in a request", E_SESSION_REQUEST, __LINE__, __FILE__);
-      if(Session::data.find(name) != Session::data.end())
-	throw Common::Exception("Session parameter `" + name + "` already exists", E_PARAM_DUPLICATE, __LINE__, __FILE__);
       Session::data[name] = value;
       return *this;
     }
@@ -202,9 +198,10 @@ namespace CGI {
     */
           
     virtual const std::string getParam(std::string name) const {
-      if(Session::data.find(name) == Session::data.end())
+      Dict_t::iterator i;
+      if((i = Session::data.find(name)) == Session::data.end()) // Complexity of find is O(log n) & for operator[] is O(n)
 	throw Common::Exception("Session parameter `" + name + "` was not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
-      return Session::data[name];
+      return i->second;
     }
 
     /*! \brief Load session #data from an existing dictionary
@@ -219,7 +216,6 @@ namespace CGI {
     }
 
     /*! \brief Set the expire time
-
       \remark time_t is defined in time.h
       \param[in] _expire Seconds since UNIX Epoch
       \return Session& for cascading operations
@@ -235,7 +231,25 @@ namespace CGI {
     time_t getExpireTime() const {
       return Session::expire;
     }
-  };  
+  };
+
+  /*! \brief Structure to store cookies value and other attributes
+
+    std::map will be used with key as name and value as this structure to store cookies
+  */
+
+  struct cookie_t {
+    std::string value; //!< Value of cookie
+    std::string path; //!< Path of cookie
+    std::string domain; //!< Domain name (must start with a dot) of cookie
+    time_t expire; //!< Expiration time since UNIX Epoch
+    bool secure; //!< Cookie is HTTPS only?
+    bool httponly; //!< Cookie only for HTTP requests
+
+    // value, path and domain are initialized to empty string by string's constructor
+    // We initialize expire, secure and httponly to 0, false, false by default
+    cookie_t() : expire(0), secure(false), httponly(false) {}
+  };
 
   /*! \brief Class to manage %Cookie data
 
@@ -246,12 +260,19 @@ namespace CGI {
   */
 
   class Cookie {
+  public:
+    typedef std::map<std::string, cookie_t> cookie_dict_t; //!< Type definition for cookie dictionary
+    typedef std::pair<std::string, cookie_t> cookie_tuple_t; //!< Type definition for cookie pair
   private:
-    Dict_t cookies; //!< Dictionary to store cookies
-    bool response; //!< Type of jar - will be true if jar is for response
+    cookie_dict_t cookies; //!< Dictionary to store cookies, consisting of name & #cookie_t
+    /*! \brief Type of jar - will be true if jar is for response
+
+      If jar is in request mode, then only value will be used in #cookie_t.
+    */
+    bool response; 
     
   public:
-
+    
     /*! \brief Constructor - Cookie Jar for response
 
       By default we assume response mode. If Cookie::Cookie(std::string) is called, we switch to request mode.
@@ -270,45 +291,40 @@ namespace CGI {
     
     Cookie(std::string _cookies);
 
-    /*! \brief Returns a copy of the cookie value
-
-      Virtual function because Request has a wrapper
-      
+    /*! \brief Returns a copy of #cookie_t      
       \param[in] name Name of the cookie
       \throw Common::Exception with #E_PARAM_NOT_FOUND if name is not found in #cookies
-      \return const std::string value of from #cookies
+      \return #cookie_t copy present in #cookies
     */
 
-    virtual const std::string getParam(std::string name) {
-      if(cookies.find(name) == cookies.end())
+    cookie_t getCookie(std::string name) {
+      cookie_dict_t::iterator i;
+      if((i = cookies.find(name)) == cookies.end())
 	throw Common::Exception("Cookie named `" + name + "` was not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
-      return cookies[name];
+      return i->second;
     }
 
     /*! \brief Sets a cookie
-
-      Virtual function because Response has a wrapper
-
       \param[in] name string containing name of cookie
-      \param[in] value string containing value of cookie
-      \return const Cookie& for cascading operations
+      \param[in] data #cookie_t containing value and other parameters
+      \return Cookie& for cascading operations
       \throw Common::Exception with E_COOKIE_REQUEST if response is false
-      \throw Common::Exception with E_PARAM_DUPLICATE if cookie is already found
     */
 
-    virtual const Cookie& setParam(std::string name, std::string value) {
+    Cookie& setCookie(std::string name, cookie_t data) {
+      cookie_dict_t::iterator i;
       if(not response)
 	throw Common::Exception("You are not allowed to set a cookie in request mode", E_COOKIE_REQUEST, __LINE__, __FILE__);
-      if(cookies.find(name) != cookies.end())
-	throw Common::Exception("Cookie named `" + name + "` already exists", E_PARAM_DUPLICATE, __LINE__, __FILE__);
-      cookies[name] = value;
+      cookies[name] = data;
     }
 
     /*! \brief Returns all cookies
-      \return #Dict_ptr_t of a #Dict_t which has everything from #cookies
+      \return Copy of #cookies
     */
-    
-    virtual Dict_ptr_t getData();
+
+    cookie_dict_t getCookies() {
+      return cookies;
+    }
   };
 
   /*! \brief Class to manage HTTP %Request data
@@ -340,7 +356,6 @@ namespace CGI {
       GET, //!< Use only HTTP GET data present in #get
       POST, //!< Use only HTTP POST data present in #post
       SESSION, //!< Use only CGI::Session
-      COOKIE, //!< Use only CGI::Cookie
       ENV, //!< Use only environment variables data present in #env
     };
 
@@ -357,25 +372,27 @@ namespace CGI {
       This function will return the requested one (#Dict_ptr_t) or if multiple ones are specified (bitwise operators)
       then the returned #Dict_t will contain combination of those.
 
+      \sa Cookie::getCookies
       \param[in] option The dictionary which should be returned. Defaults to all values bitwise-or'd \sa #option_t
       \throw Common::Exception with #E_POST_BINARY if option has POST and #rawpostdata is true.
       \return #Dict_ptr_t for a #Dict_t containing the requested data      
      */
 
-    Dict_ptr_t getData(unsigned option = GET | POST | SESSION | COOKIE | ENV);
+    Dict_ptr_t getData(unsigned option = GET | POST | SESSION | ENV);
 
     /*! \brief Returns value of single request parameter
 
-       The default order for searching is GPCSE - Get, Post, %Cookie, %Session and Environment variables
+       The default order for searching is GPSE - Get, Post, %Session and Environment variables
 
+       \sa Cookie::getCookie
        \param[in] name Name of the request parameter
-       \param[in] option Dictionaries to search for. Defaults to all five of them (GPCSE). \sa #option_t
+       \param[in] option Dictionaries to search for. Defaults to all five of them (GPSE). \sa #option_t
        \return Value of the request parameter
        \throw Common::Exception with #E_PARAM_NOT_FOUND if requested parameter is not found in the specified dictionaries.
        \throw Common::Exception with #E_POST_BINARY if option has #POST and #rawpostdata is true
      */
 
-    std::string getParam(std::string name, unsigned option = GET | POST | SESSION | COOKIE | ENV);
+    std::string getParam(std::string name, unsigned option = GET | POST | SESSION | ENV);
 
     /*! \brief Returns post data if it is binary (file upload)
 
@@ -413,7 +430,6 @@ namespace CGI {
     
     enum option_t {
       SESSION, //!< Set a session parameter
-      COOKIE, //!< Set a cookie
       HEADER, //!< Set a response header
     };
 
@@ -434,7 +450,6 @@ namespace CGI {
       \param name Name of parameter
       \param value Value of parameter
       \param option Context of parameter (#option_t)
-      \remark Duplicate parameter errors are not applicable here
       \return Response& for cascading operation
     */
     
@@ -497,7 +512,6 @@ namespace CGI {
     */
 
     std::string& getCompleteBody();
-
   };    
 }
 #endif
