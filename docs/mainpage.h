@@ -1,7 +1,3 @@
-/*! \file mainpage.hpp
-  \brief File just for general-purpose documentation (all pages)
-*/
-
 /*! \mainpage CXXCMS: A content management system written in C++
 
   \section what What is CXXCMS?
@@ -34,8 +30,17 @@
   - Version Control
    - You should know either Git or Mercurial. The Mercurial repository is the default located at https://bitbucket.org/nileshgr/cxxcms \n
    and a Git repository, a mirror is located at https://github.com/nileshgr/cxxcms
+   - Both the repository hosting services have comprehensive documentation to learn those, do read them if you wish to.
+  - Doxygen
+   - Doxygen is the documentation system we use. In fact, this page itself is generated using doxygen (see footer)
+   - For more information on doxygen, see http://www.doxygen.org
 
-   If you know the specified things, just drop an email to contact@nileshgr.com\n
-   You will get access to your desired repository (git or hg) and also become a member of the mailing list where discussions happen,
-   located at https://groups.google.com/group/cxxcms
+   \section bugtrack Bug tracking and Todo lists
+   We have a bug tracker at https://tracker.itech7.com and to do list at \ref todo\n
+   If you want to post a bug, you should register at the tracker and post a bug. You can also email the bugs to cxxcms-issues@itech7.com.
+   You will be asked to confirm your account.
+
+   If you know the specified things, fork either of the repositories and start working. You can then make pull requests, we'll take it into account.\n\n
+   Discussions happen at the mailing list- https://groups.google.com/group/cxxcms\n
+   You should request an invite there.
 */
