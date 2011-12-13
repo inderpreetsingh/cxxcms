@@ -35,6 +35,8 @@ namespace CGI {
     E_SESSION_REQUEST, //!< Session is in request mode. \sa Session::response
     E_POST_BINARY, //!< POST data is binary. \sa Request::getData Request::getParam
     E_POST_NOT_BINARY, //!< POST data is not binary. \sa Request::getBinPost
+    E_RESPONSE_BINARY, //!< Response is binary. \sa Response::getCompleteBody Response::getContentBody
+    E_RESPONSE_NOT_BINARY, //!< Response is not binary. \sa Response::getBinaryData
   };
 
   /*! \brief Hex decoder
@@ -206,7 +208,7 @@ namespace CGI {
           
     virtual const std::string getParam(std::string name) const {
       Dict_t::iterator i;
-      if((i = Session::data.find(name)) == Session::data.end()) // Complexity of find is O(log n) & for operator[] is O(n)
+      if((i = Session::data.find(name)) == Session::data.end())
 	throw Common::Exception("Session parameter `" + name + "` was not found", E_PARAM_NOT_FOUND, __LINE__, __FILE__);
       return i->second;
     }
@@ -254,8 +256,8 @@ namespace CGI {
     bool httponly; //!< Cookie only for HTTP requests
 
     // value, path and domain are initialized to empty string by string's constructor
-    // We initialize expire, secure and httponly to 0, false, false by default
-    cookie_t() : expire(0), secure(false), httponly(false) {}
+    // We initialize expire, secure and httponly to 0, false, true by default
+    cookie_t() : expire(0), secure(false), httponly(true) {}
   };
 
   /*! \brief Class to manage %Cookie data
@@ -439,6 +441,15 @@ namespace CGI {
     bool binary;
     std::unique_ptr<char[]> binaryData; //!< Holds pointer to binary data
     size_t binaryLength; //!< Holds length of binary data
+    std::string headerString; //!< String to store headers (parsed)
+
+    /*! \brief Parses #headers into #headerString
+
+      Headers are sent as Name-value pairs separated by colon and CRLF.
+      We translate #headers into this format and store it in #headerString, so that
+      it can be directly prepended to the output
+    */
+    void setupHeaders();
 
   public:
 
@@ -469,7 +480,12 @@ namespace CGI {
       \return Response& for cascading operation
     */
     
-    Response& setParam(std::string name, std::string value, option_t option);
+    Response& setParam(std::string name, std::string value, option_t option) {
+      if(option == HEADER)
+	headers[name] = value;
+      if(option == SESSION)
+	Session::setParam(name, value);
+    }
 
     /*! \brief Returns the specified parameter from the context
 
@@ -483,39 +499,32 @@ namespace CGI {
 
     std::string getParam(std::string name, option_t option);
 
-    /*! \brief Replaces/adds data in #contentBody
-      \param data Data to be added/replaced
-      \return Response& for cascading operations
-    */
-
-    Response& addBody(std::string data) {
-      contentBody = data;
-    }
-
     /*! \brief Appends data to #contentBody
-      \param data Data to be appended
+      \param data Data to be appended      
       \return Response& for cascading operations
     */
 
     Response& appendBody(std::string data) {
+      if(binary)
+	throw Common::Exception("Response is binary", E_RESPONSE_BINARY, __LINE__, __FILE__);
       contentBody += data;
     }
 
-    /*! \brief Clears #contentBody and #completeBody
+    /*! \brief Clears #contentBody, #completeBody and if #binary is true, #binaryData (deallocates memory)
       \return Response& for cascading operations
     */
 
-    Response& clearBody() {
-      contentBody.clear();
-      completeBody.clear();
-    }
+    Response& clearBody();
 
     /*! \brief Returns content body
       \remark Reference is returned because body data might be large
+      \throw Common::Exception with #E_RESPONSE_BINARY if #binary is true
       \return std::string& #contentBody
     */
 
     std::string& getContentBody() {
+      if(binary)
+	throw Common::Exception("Response is binary", E_RESPONSE_BINARY, __LINE__, __FILE__);
       return contentBody;
     }
 
@@ -525,6 +534,7 @@ namespace CGI {
       present in #headers into the form in which them must be emitted
       
       \remark Reference is returned because the data might be large
+      \throw Common::Exception with #E_RESPONSE_BINARY if #binary is true
       \return std::string& #completeBody
     */
 
@@ -546,13 +556,11 @@ namespace CGI {
     }
 
     /*! \brief Returns binary body
-      \remark Do <b>NOT</b> call delete[] on the pointer obtained. It is taken care of at class destruction by unique_ptr.
-      \return const char*
+      \throw Common::Exception with #E_RESPONSE_NOT_BINARY if #binary is false
+      \return std::unique_ptr<char[]> of memory location containing the parsed header string and binary data.
     */
 
-    const char* getBinaryBody() {
-      return binaryData.get();
-    }      
+    std::unique_ptr<char[]> getBinaryBody();
   };
 }
 #endif
