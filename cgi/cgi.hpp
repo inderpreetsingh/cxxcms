@@ -17,8 +17,6 @@
 
   The %Common Gateway Interface is the basic protocol by which a webserver communicates data to the application.
   The Query string, HTTP GET/POST, HTTP header, etc, data is available through the %CGI protocol (environment variables, stdin).
-
-  \todo Response module
 */
 
 namespace CGI {
@@ -465,7 +463,6 @@ namespace CGI {
       The constructor sets the session cookie, and sets the default headers to the following values:\n
       Content-Encoding: utf-8
       Content-Type: text/html
-      \todo More to be added
     */
 
     Response();
@@ -542,7 +539,7 @@ namespace CGI {
 
     /*! \brief Add binary body
       \remark
-      -# If this is used, content added via #addBody or #appendBody will be discarded
+      -# If this is used, content added via #appendBody will be discarded
       -# Sets #binary to true
       \param _binaryData std::unique_ptr holding pointer to block of data
       \param _binaryLength Length/size of data (bytes)

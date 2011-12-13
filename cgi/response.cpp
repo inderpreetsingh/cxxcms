@@ -108,4 +108,8 @@ namespace CGI {
     }
     headerString += "\r\n\r\n";
   }
+  Response::Response() {
+    setParam("Content-Type", "text/html", HEADER);
+    setParam("Content-Encoding", "utf-8", HEADER);
+  }
 }

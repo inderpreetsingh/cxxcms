@@ -2,6 +2,8 @@
 #define COMMON_HPP
 #include <string>
 #include <global.hpp>
+#include <map>
+#include <memory>
 
 /*! \file common.hpp
   \brief %Common utilities
@@ -23,6 +25,7 @@ namespace Common {
   enum {
     E_CONFIG_LOAD, //!< Error while loading configuration file
     E_CONFIG_PARAM_NOT_FOUND, //!< Configuration parameter not found \sa Config::operator[]
+    E_REGISTRY_ITEM_NOT_FOUND, //!< Registry item not found \sa Registry::getItem
   };
 
 
@@ -158,5 +161,73 @@ namespace Common {
       return data[key];
     }
   };
+
+  /*! \brief Registry class
+
+    A class to store pointers to various types of objects etc with key name.
+    The class supports two interfaces- singleton and the usual, multiple instances. \n
+    In singleton method, once an instance is created, it will be persisted till the method to destroy the instance is called.
+
+    \coder{Nilesh G,nileshgr}
+  */
+
+  class Registry {
+  private:
+    typedef std::map<std::string, void*> items_t; //!< Define items_t dictionary type
+    typedef std::pair<std::string, void*> item_t; //!< Define item_t, one single item type
+    items_t items; //!< Dictionary to store pointers to objects
+    static std::unique_ptr<Registry> instance; //!< Unique_ptr to store pointer to singleton instance
+
+  public:
+    //! Static method to obtain instance
+
+    static Registry& getInstance() {
+      if(!instance.get())
+	instance.reset (new Registry);
+      return *instance;
+    }
+    
+    //! Static method to destroy instance
+
+    static void destroyInstance() {
+      instance.reset();
+    }
+
+    /*! \brief Method to add item
+      \param name Name of item to be added
+      \param ptr Pointer to item to be stored
+      \return Registry& for cascading operations
+    */
+
+    Registry& addItem(std::string name, void* ptr) {
+      items[name] = ptr;
+      return *this;
+    }
+
+    /*! \brief Templated function to retrieve item
+      \param name Name of item to be returned
+      \tparam objtype Type of the object required as return type. dynamic_cast will be used.
+      \return Reference to dynamic_cast of objtype
+      \throw Common::Exception if name is not found in items
+    */
+      
+    template<typename objtype>
+    objtype& getItem(std::string name) {
+      items_t::iterator i;
+      if((i = items.find(name)) == items.end())
+	throw Common::Exception("Item: " + name + " not found in registry", E_REGISTRY_ITEM_NOT_FOUND, __LINE__, __FILE__);
+      return dynamic_cast<objtype> (i->second);
+    }
+
+    /*! \brief Method to delete item
+      \param name Name of the item to be deleted
+      \return Registry& for cascading operations
+    */
+      
+    Registry& deleteItem(std::string name) {
+      items.erase(name);
+      return *this;
+    }
+  };    
 }
 #endif
