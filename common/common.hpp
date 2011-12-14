@@ -4,6 +4,8 @@
 #include <global.hpp>
 #include <map>
 #include <memory>
+#include <algorithm>
+#include <cctype>
 
 /*! \file common.hpp
   \brief %Common utilities
@@ -181,17 +183,11 @@ namespace Common {
   public:
     //! Static method to obtain instance
 
-    static Registry& getInstance() {
-      if(!instance.get())
-	instance.reset (new Registry);
-      return *instance;
-    }
+    static Registry& getInstance();
     
     //! Static method to destroy instance
 
-    static void destroyInstance() {
-      instance.reset();
-    }
+    static void destroyInstance();
 
     /*! \brief Method to add item
       \param name Name of item to be added
@@ -200,6 +196,7 @@ namespace Common {
     */
 
     Registry& addItem(std::string name, void* ptr) {
+      std::transform(name.begin(), name.end(), name.begin(), (int (*)(int))std::tolower);
       items[name] = ptr;
       return *this;
     }
@@ -213,10 +210,11 @@ namespace Common {
       
     template<typename objtype>
     objtype& getItem(std::string name) {
+      std::transform(name.begin(), name.end(), name.begin(), (int (*)(int)) std::tolower);
       items_t::iterator i;
       if((i = items.find(name)) == items.end())
 	throw Common::Exception("Item: " + name + " not found in registry", E_REGISTRY_ITEM_NOT_FOUND, __LINE__, __FILE__);
-      return dynamic_cast<objtype> (i->second);
+      return *(reinterpret_cast <objtype*> (i->second));
     }
 
     /*! \brief Method to delete item
@@ -228,6 +226,6 @@ namespace Common {
       items.erase(name);
       return *this;
     }
-  };    
+  };
 }
 #endif

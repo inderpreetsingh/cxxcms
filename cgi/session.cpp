@@ -1,5 +1,6 @@
 #include <cgi/cgi.hpp>
 #include <uuid/uuid.h>
+#include <cstdlib>
 
 /*! \file session.cpp
   \brief Implementation of CGI::Session
@@ -20,9 +21,8 @@ namespace CGI {
     uuid_unparse(uu, _id);
     id = _id;
 
-    //! \todo We need to set the default expire time as per the settings in configuration file. For now, it's one hour (hardcoded).
-    
-    setExpireTime(std::time(NULL) + (time_t) 3600);
+    Common::Registry &reg = Common::Registry::getInstance();
+    setExpireTime(std::time(NULL) + (time_t) std::atol(reg.getItem<Common::Config>("config").getParam("session_expire").c_str()));
    }
 
   Session::Session(std::string _id) {

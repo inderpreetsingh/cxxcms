@@ -47,17 +47,18 @@ namespace CGI {
 	  rawpostdata = true;
 	}
       } catch(Common::Exception e) {
-	if(e.getCode() != E_PARAM_NOT_FOUND)
+	if(e != E_PARAM_NOT_FOUND)
 	  throw e;
 	else
 	  post = *(CGI::Parser(buf).parse());
       }
     }
     
-    //! \todo Use session cookie name from configuration file
     try {
       Cookie(getParam("HTTP_COOKIE", ENV));
-      Session(getCookie("sess_id").value);
+      Common::Registry &reg = Common::Registry::getInstance();
+      Common::Config &conf = reg.getItem<Common::Config>("config");      
+      Session(getCookie(conf.getParam("sess_cookiename").c_str()).value);
     }
     catch(Common::Exception e) {
       if(e != E_PARAM_NOT_FOUND)

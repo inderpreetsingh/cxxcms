@@ -56,19 +56,20 @@ namespace CGI {
     */
 
     std::string https;
+    Common::Registry &reg = Common::Registry::getInstance();
+    CGI::Request &req = reg.getItem<CGI::Request>("request");
 
     try {
-      //      https = getEnv("HTTPS");
-      //! \todo Use CGI::Request to access this function from global registry class
+      https = req.getParam("HTTPS", Request::ENV);
     }
     catch(Common::Exception e) {
-      if(e.getCode() != E_PARAM_NOT_FOUND)
+      if(e != E_PARAM_NOT_FOUND)
 	throw e;      
       try {
-	//	https = getEnv("HTTP_HTTPS");
+	https = req.getParam("HTTP_HTTPS", Request::ENV);
       }
       catch(Common::Exception e) {
-	if(e.getCode() != E_PARAM_NOT_FOUND)
+	if(e != E_PARAM_NOT_FOUND)
 	  throw e;
       }
     }
@@ -81,12 +82,12 @@ namespace CGI {
     c.path = "/"; // Session cookies don't make sense in subdiretories
 
     try {
-      //      c.domain = getEnv("HTTP_HOST");
+      c.domain = req.getParam("HTTP_HOST", Request::ENV);
     }
     catch(Common::Exception e) {
-      if(e.getCode() != E_PARAM_NOT_FOUND)
+      if(e != E_PARAM_NOT_FOUND)
 	throw e;
-      //      c.domain = getEnv("SERVER_NAME");
+      c.domain = req.getParam("SERVER_NAME", Request::ENV);
     }
 
     // Cookie domain cannot be set for complete domain name, they must be valid across all subdomains
