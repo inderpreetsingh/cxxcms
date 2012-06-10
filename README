@@ -6,20 +6,4 @@ the fastest languages and this application is for sites, which expect
 a large number of hits. We all know that Facebook designed a PHP to C++
 converter because PHP was very slow and lagging the site when the site 
 started getting a large number of hits. This is an open source project, 
-licensed under GNU GPL v3. The project mailing list is located at 
-http://groups.google.com/group/cxxcms
-
-Please note: This project has no relation with the C++ Web Development 
-Framework as described at http://en.wikipedia.org/wiki/CppCMS and 
-http://cppcms.sf.net. We are considering a rename on this and a decision 
-will be taken soon.
-
-The project's main repository is at https://bitbucket.org/nileshgr/cxxcms and
-there is a git mirror at https://github.com/nileshgr/cxxcms
-
-Issues/bug reports/feature requests should go to https://bitbucket.org/nileshgr/cxxcms/issues
-
-The git mirror is read-write, people can contribute there as well and merging will be taken care
-of by people who use both the repositories (via hg-git).
-
-Project wiki is located at https://bitbucket.org/nileshgr/cxxcms/wiki. The wiki at present contains useful information for new contributors.
+licensed under GNU GPL v3.
