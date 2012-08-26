@@ -11,6 +11,12 @@
   writing object interface patterns and what not which is bound to have much more overhead than C++ itself and will be slow, defeating the whole purpose of a
   fast and light application.
 
+ \section why Why CXXCMS?
+  When web was built it revolved around web pages. As the time passed, webpages has evolved into web applications but the tools that we use for web developement
+  are still page oriented. The boundary between a web application and desktop applications is getting blurred. Now web applications are as good as (if not better) 
+  than desktop applications. So we should start thinking about using application oriented languages such as c++ for making web applications. CXXCMS makes it easier 
+  to use C++ for making web applications. 
+
   \section how How is it done?
   Okay, so you came down reading here means you are really interested. Good. We use OpenMarket's FastCGI library to interface with the webserver. So essentially
   it reduces to running a FastCGI application on the server. Running a FastCGI application means, you either need to have your own server, virtual or real, because
